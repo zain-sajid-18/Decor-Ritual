@@ -1,17 +1,32 @@
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/nav";
 import { Badge } from "@/components/ui/badge";
+import { getOptionalSession } from "@/lib/auth/require-admin";
+import { logoutAction } from "@/lib/actions/admin/auth";
 
 export const metadata = {
   title: "Admin Dashboard | ZF Store",
   description: "Catalog and taxonomy management console for ZF Store.",
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getOptionalSession();
+
+  // If there is no active session (e.g. viewing /admin/login),
+  // render the children in a clean centered container without sidebar chrome.
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col justify-center">
+        {children}
+      </div>
+    );
+  }
+
+  // When authenticated, render full admin dashboard layout
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
       {/* Sidebar */}
@@ -41,14 +56,39 @@ export default function AdminLayout({
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+          {/* Authenticated User Info */}
           <div className="rounded border border-zinc-200 bg-zinc-50 p-2.5 dark:border-zinc-800 dark:bg-zinc-950/50">
-            <span className="text-[10px] uppercase font-semibold text-zinc-400 block">
-              Auth Architecture
-            </span>
-            <span className="text-xs text-zinc-600 dark:text-zinc-400 block mt-0.5">
-              Ready for Step 8 Auth
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 dark:text-zinc-400">
+                {session.role}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span className="text-[10px] text-zinc-400">Active</span>
+              </span>
+            </div>
+            <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium block truncate" title={session.email}>
+              {session.email}
             </span>
           </div>
+
+          {/* Sign Out Form Button */}
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="w-full flex items-center justify-between text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-2 py-1.5 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            >
+              <span>Sign Out</span>
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+            </button>
+          </form>
 
           <Link
             href="/"
@@ -69,10 +109,14 @@ export default function AdminLayout({
             <span className="text-zinc-800 dark:text-zinc-200 font-medium">Workspace</span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               DAL Active
+            </span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">|</span>
+            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              {session.email}
             </span>
           </div>
         </header>

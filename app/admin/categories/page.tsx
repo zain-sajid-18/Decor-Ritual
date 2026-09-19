@@ -3,12 +3,14 @@ import { adminGetCategories } from "@/lib/data/admin/categories";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export const metadata = {
   title: "Categories | ZF Store Admin",
 };
 
 export default async function AdminCategoriesPage() {
+  await requireAdmin();
   const categories = await adminGetCategories();
 
   return (

@@ -87,3 +87,23 @@ export type DbProduct = typeof products.$inferSelect;
 export type DbNewProduct = typeof products.$inferInsert;
 export type DbProductImage = typeof productImages.$inferSelect;
 export type DbNewProductImage = typeof productImages.$inferInsert;
+
+/**
+ * Admin Users Table
+ * Stores internal administrator credentials. No customer data stored here.
+ */
+export const adminUsers = pgTable("admin_users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name"),
+  role: text("role", { enum: ["admin", "editor"] })
+    .notNull()
+    .default("admin"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type DbAdminUser = typeof adminUsers.$inferSelect;
+export type DbNewAdminUser = typeof adminUsers.$inferInsert;

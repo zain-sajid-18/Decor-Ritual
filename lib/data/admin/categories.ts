@@ -5,6 +5,7 @@ import {
   insertCategory,
   updateCategoryById,
   deleteCategoryById,
+  countProductsInCategory,
 } from "@/lib/repositories/categories";
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from "@/types/category";
 
@@ -38,4 +39,8 @@ export async function adminUpdateCategory(
 
 export async function adminDeleteCategory(id: string): Promise<boolean> {
   return deleteCategoryById(id);
+}
+
+export async function adminCountProductsInCategory(categoryId: string): Promise<number> {
+  return countProductsInCategory(categoryId);
 }

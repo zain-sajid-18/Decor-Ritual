@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { products, productImages, categories } from "@/lib/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import type { Product, CreateProductInput, UpdateProductInput, ProductQueryParams } from "@/types/product";
-import { SEED_PRODUCTS, SEED_CATEGORIES } from "@/lib/db/seed-data";
+import { SEED_PRODUCTS } from "@/lib/db/seed-data";
 
 /**
  * Product Repository
@@ -216,37 +216,14 @@ export async function findProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function insertProduct(data: CreateProductInput): Promise<Product> {
+  if (!db) {
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
+  }
+
   const id = `prod-${Date.now()}`;
   const now = new Date();
-
-  if (!db) {
-    const cat = SEED_CATEGORIES.find((c) => c.id === data.categoryId);
-    const newProd: Product = {
-      id,
-      title: data.title,
-      slug: data.slug,
-      brand: data.brand,
-      shortDescription: data.shortDescription,
-      description: data.description,
-      categoryId: data.categoryId,
-      categorySlug: cat?.slug,
-      tags: data.tags,
-      images: (data.images || []).map((img, i) => ({
-        id: `img-${Date.now()}-${i}`,
-        ...img,
-      })),
-      featured: data.featured ?? false,
-      recommended: data.recommended ?? false,
-      status: data.status ?? "draft",
-      amazonUrl: data.amazonUrl,
-      asin: data.asin,
-      seo: data.seo,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    };
-    SEED_PRODUCTS.unshift(newProd);
-    return newProd;
-  }
 
   const [row] = await db
     .insert(products)
@@ -314,30 +291,13 @@ export async function updateProductById(
   id: string,
   data: UpdateProductInput
 ): Promise<Product | null> {
-  const now = new Date();
-
   if (!db) {
-    const idx = SEED_PRODUCTS.findIndex((p) => p.id === id);
-    if (idx === -1) return null;
-    const current = SEED_PRODUCTS[idx];
-    const updatedImages = data.images
-      ? data.images.map((img, i) => ({
-          id: `img-${id}-${i}`,
-          url: img.url,
-          alt: img.alt,
-          sortOrder: img.sortOrder ?? i,
-        }))
-      : current.images;
-
-    const updated: Product = {
-      ...current,
-      ...data,
-      images: updatedImages,
-      updatedAt: now.toISOString(),
-    };
-    SEED_PRODUCTS[idx] = updated;
-    return updated;
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
   }
+
+  const now = new Date();
 
   const [row] = await db
     .update(products)
@@ -368,10 +328,9 @@ export async function updateProductById(
 
 export async function deleteProductById(id: string): Promise<boolean> {
   if (!db) {
-    const idx = SEED_PRODUCTS.findIndex((p) => p.id === id);
-    if (idx === -1) return false;
-    SEED_PRODUCTS.splice(idx, 1);
-    return true;
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
   }
 
   const result = await db.delete(products).where(eq(products.id, id)).returning();
