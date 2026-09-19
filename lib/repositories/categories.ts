@@ -1,8 +1,8 @@
 import { db } from "@/lib/db";
-import { categories } from "@/lib/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { categories, products } from "@/lib/db/schema";
+import { eq, asc, sql } from "drizzle-orm";
 import type { Category, CreateCategoryInput, UpdateCategoryInput } from "@/types/category";
-import { SEED_CATEGORIES } from "@/lib/db/seed-data";
+import { SEED_CATEGORIES, SEED_PRODUCTS } from "@/lib/db/seed-data";
 
 /**
  * Category Repository
@@ -91,26 +91,28 @@ export async function findCategoryById(id: string): Promise<Category | null> {
   };
 }
 
+export async function countProductsInCategory(categoryId: string): Promise<number> {
+  if (!db) {
+    return SEED_PRODUCTS.filter((p) => p.categoryId === categoryId).length;
+  }
+
+  const [result] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(products)
+    .where(eq(products.categoryId, categoryId));
+
+  return result?.count ?? 0;
+}
+
 export async function insertCategory(data: CreateCategoryInput): Promise<Category> {
+  if (!db) {
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
+  }
+
   const id = `cat-${Date.now()}`;
   const now = new Date();
-
-  if (!db) {
-    const newCat: Category = {
-      id,
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      image: data.image,
-      isActive: data.isActive ?? true,
-      displayOrder: data.displayOrder ?? 0,
-      seo: data.seo,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    };
-    SEED_CATEGORIES.push(newCat);
-    return newCat;
-  }
 
   const [row] = await db
     .insert(categories)
@@ -150,20 +152,13 @@ export async function updateCategoryById(
   id: string,
   data: UpdateCategoryInput
 ): Promise<Category | null> {
-  const now = new Date();
-
   if (!db) {
-    const idx = SEED_CATEGORIES.findIndex((c) => c.id === id);
-    if (idx === -1) return null;
-    const current = SEED_CATEGORIES[idx];
-    const updated: Category = {
-      ...current,
-      ...data,
-      updatedAt: now.toISOString(),
-    };
-    SEED_CATEGORIES[idx] = updated;
-    return updated;
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
   }
+
+  const now = new Date();
 
   const [row] = await db
     .update(categories)
@@ -202,12 +197,12 @@ export async function updateCategoryById(
 
 export async function deleteCategoryById(id: string): Promise<boolean> {
   if (!db) {
-    const idx = SEED_CATEGORIES.findIndex((c) => c.id === id);
-    if (idx === -1) return false;
-    SEED_CATEGORIES.splice(idx, 1);
-    return true;
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
   }
 
   const result = await db.delete(categories).where(eq(categories.id, id)).returning();
   return result.length > 0;
 }
+

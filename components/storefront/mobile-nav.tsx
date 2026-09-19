@@ -7,11 +7,13 @@ import { usePathname } from "next/navigation";
 export function MobileNav() {
   const [isOpen, setIsOpen] = React.useState(false);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = React.useState(pathname);
 
-  // Close menu on route change
-  React.useEffect(() => {
+  // Reset menu when route changes
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setIsOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <div className="md:hidden">

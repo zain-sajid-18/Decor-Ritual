@@ -15,3 +15,5 @@ export const pgClient = connectionString
 export const db = pgClient ? drizzle(pgClient, { schema }) : null;
 
 export type Database = typeof db;
+
+export const isDbAvailable = Boolean(db);

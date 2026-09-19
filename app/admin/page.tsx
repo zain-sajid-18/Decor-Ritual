@@ -3,12 +3,15 @@ import { adminGetProducts } from "@/lib/data/admin/products";
 import { adminGetCategories } from "@/lib/data/admin/categories";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 export const metadata = {
   title: "Dashboard | ZF Store Admin",
 };
 
 export default async function AdminDashboardPage() {
+  await requireAdmin();
+
   const [products, categories] = await Promise.all([
     adminGetProducts(),
     adminGetCategories(),
