@@ -50,14 +50,6 @@ export function MobileNav() {
             >
               Categories
             </Link>
-            <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-              <Link
-                href="/admin"
-                className="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
-              >
-                Admin Area →
-              </Link>
-            </div>
           </nav>
         </div>
       )}

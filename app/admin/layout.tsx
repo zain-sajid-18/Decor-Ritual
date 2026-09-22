@@ -7,6 +7,10 @@ import { logoutAction } from "@/lib/actions/admin/auth";
 export const metadata = {
   title: "Admin Dashboard | ZF Store",
   description: "Catalog and taxonomy management console for ZF Store.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminLayout({
