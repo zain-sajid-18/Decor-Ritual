@@ -4,7 +4,7 @@ export function StorefrontFooter() {
   return (
     <footer className="w-full border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50 mt-auto">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {/* Brand & Purpose */}
           <div className="md:col-span-2 space-y-3">
             <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -36,23 +36,6 @@ export function StorefrontFooter() {
                   className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                 >
                   Categories
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Platform & Admin */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-              Management
-            </h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/admin"
-                  className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-                >
-                  Admin Portal
                 </Link>
               </li>
             </ul>

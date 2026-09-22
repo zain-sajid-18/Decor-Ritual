@@ -32,12 +32,6 @@ export function StorefrontHeader() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <Link
-            href="/admin"
-            className="hidden sm:inline-flex items-center text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 px-2.5 py-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            Admin Dashboard
-          </Link>
           <MobileNav />
         </div>
       </div>

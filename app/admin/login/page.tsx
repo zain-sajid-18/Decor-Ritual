@@ -7,6 +7,10 @@ import { getOptionalSession } from "@/lib/auth/require-admin";
 export const metadata: Metadata = {
   title: "Admin Sign In | ZF Store",
   description: "Secure administrator sign-in for ZF Store management.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminLoginPage({
