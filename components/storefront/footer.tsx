@@ -24,18 +24,10 @@ export function StorefrontFooter() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/products"
+                  href="/"
                   className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                 >
                   All Products
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/categories"
-                  className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-                >
-                  Categories
                 </Link>
               </li>
             </ul>

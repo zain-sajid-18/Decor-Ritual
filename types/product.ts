@@ -58,6 +58,16 @@ export type CreateProductInput = {
 
 export type UpdateProductInput = Partial<CreateProductInput>;
 
+export type ProductSortOption = "featured" | "newest" | "a-z";
+
+export interface PaginatedProductsResult {
+  products: Product[];
+  totalCount: number;
+  page: number;
+  totalPages: number;
+  pageSize: number;
+}
+
 export interface ProductQueryParams {
   status?: ProductStatus;
   categorySlug?: string;
@@ -66,6 +76,7 @@ export interface ProductQueryParams {
   recommended?: boolean;
   search?: string;
   tag?: string;
+  sort?: ProductSortOption;
   limit?: number;
   offset?: number;
 }

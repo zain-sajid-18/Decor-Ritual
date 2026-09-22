@@ -16,16 +16,10 @@ export function StorefrontHeader() {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/products"
+              href="/"
               className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
             >
-              Discover
-            </Link>
-            <Link
-              href="/categories"
-              className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              Categories
+              Discover Products
             </Link>
           </nav>
         </div>

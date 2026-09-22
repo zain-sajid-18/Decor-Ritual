@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProductBySlug } from "@/lib/data/products";
+import { ProductGallery } from "@/components/storefront/product-gallery";
 import { Badge } from "@/components/ui/badge";
 
 type ProductDetailPageProps = {
@@ -20,9 +21,25 @@ export async function generateMetadata({
     };
   }
 
+  const title = product.seo?.title || `${product.title} | ZF Store`;
+  const description =
+    product.seo?.description || product.shortDescription || "Curated product discovery at ZF Store.";
+
   return {
-    title: product.seo?.title || `${product.title} | ZF Store`,
-    description: product.seo?.description || product.shortDescription,
+    title,
+    description,
+    alternates: {
+      canonical: `/products/${product.slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images:
+        product.images && product.images.length > 0
+          ? [{ url: product.images[0].url, alt: product.images[0].alt || product.title }]
+          : undefined,
+    },
   };
 }
 
@@ -37,49 +54,41 @@ export default async function StorefrontProductDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 space-y-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-        <Link href="/" className="hover:text-zinc-900 dark:hover:text-zinc-100">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <Link href="/" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
           Home
         </Link>
-        <span>/</span>
-        <Link href="/products" className="hover:text-zinc-900 dark:hover:text-zinc-100">
-          Products
-        </Link>
-        <span>/</span>
-        <span className="text-zinc-900 dark:text-zinc-100 font-medium truncate max-w-xs">
+        <span aria-hidden="true">/</span>
+        {product.categorySlug ? (
+          <>
+            <Link
+              href={`/?category=${encodeURIComponent(product.categorySlug)}`}
+              className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors capitalize"
+            >
+              {product.categorySlug.replace(/-/g, " ")}
+            </Link>
+            <span aria-hidden="true">/</span>
+          </>
+        ) : null}
+        <span className="text-zinc-900 dark:text-zinc-100 font-medium truncate max-w-xs sm:max-w-md">
           {product.title}
         </span>
       </nav>
 
       {/* Main Product Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-        {/* Product Visual Area */}
-        <div className="space-y-4">
-          <div className="aspect-square w-full rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 flex items-center justify-center p-8 text-center">
-            {product.images && product.images.length > 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 text-zinc-400">
-                <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-xs">{product.images[0].alt || "Product image"}</span>
-              </div>
-            ) : (
-              <div className="text-xs text-zinc-400">No product image available</div>
-            )}
-          </div>
-
-          {/* Development Fixture Notice */}
-          <div className="rounded border border-dashed border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300">
-            <span className="font-semibold">Development Fixture:</span> This item demonstrates detail layout and DAL retrieval.
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        {/* Left Column: Product Visuals / Image Gallery */}
+        <div className="lg:col-span-7">
+          <ProductGallery images={product.images || []} productTitle={product.title} />
         </div>
 
-        {/* Product Information Area */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+        {/* Right Column: Product Information and Actions */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="space-y-3">
+            {/* Brand & Badges */}
+            <div className="flex flex-wrap items-center gap-2">
               {product.brand && (
                 <span className="text-xs uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">
                   {product.brand}
@@ -89,56 +98,69 @@ export default async function StorefrontProductDetailPage({
               {product.recommended && <Badge variant="outline">Recommended</Badge>}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            {/* Title */}
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
               {product.title}
             </h1>
 
+            {/* Category Link */}
             {product.categorySlug && (
-              <div className="pt-1">
+              <div className="pt-0.5">
                 <Link
-                  href={`/categories/${product.categorySlug}`}
-                  className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 underline"
+                  href={`/?category=${encodeURIComponent(product.categorySlug)}`}
+                  className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 capitalize underline"
                 >
-                  Category: {product.categorySlug}
+                  Category: {product.categorySlug.replace(/-/g, " ")}
                 </Link>
               </div>
             )}
           </div>
 
           {/* Short Description */}
-          <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 leading-relaxed">
+          <div className="text-sm font-medium leading-relaxed text-zinc-700 dark:text-zinc-300">
             {product.shortDescription}
           </div>
 
-          {/* Outbound Amazon Primary CTA */}
+          {/* Primary Outbound Amazon Destination CTA */}
           <div className="space-y-3 pt-2">
             <a
               href={product.amazonUrl}
               target="_blank"
               rel="nofollow sponsored noopener"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-zinc-900 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-zinc-900 px-6 py-4 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               <span>View on Amazon</span>
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
               </svg>
             </a>
 
-            {/* Contextual Affiliate Notice */}
-            <p className="text-[11px] leading-normal text-zinc-500 dark:text-zinc-400">
-              External link. You will be redirected to the Amazon product page. ZF Store may earn an affiliate commission on qualifying purchases at no additional cost to you.
+            {/* Transparent Amazon Associates Disclosure */}
+            <p className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+              External link. You will be redirected to Amazon for purchasing and fulfillment. ZF Store may earn an affiliate commission on qualifying purchases at no additional cost to you.
             </p>
           </div>
 
           {/* Tags */}
           {product.tags && product.tags.length > 0 && (
-            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block mb-2">
+            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block">
                 Tags & Aesthetics
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {product.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
+                  <Badge key={tag} variant="secondary" className="text-xs">
                     #{tag}
                   </Badge>
                 ))}
@@ -147,14 +169,16 @@ export default async function StorefrontProductDetailPage({
           )}
 
           {/* Full Description */}
-          <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Product Overview
-            </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed whitespace-pre-line">
-              {product.description}
-            </p>
-          </div>
+          {product.description && (
+            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Product Details
+              </h2>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed whitespace-pre-line">
+                {product.description}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
