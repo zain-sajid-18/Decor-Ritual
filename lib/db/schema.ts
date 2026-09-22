@@ -54,6 +54,11 @@ export const productImages = pgTable("product_images", {
     .notNull()
     .references(() => products.id, { onDelete: "cascade" }),
   url: text("url").notNull(),
+  /**
+   * Cloudinary public identifier for reliable asset deletion.
+   * Nullable to preserve backward compatibility with existing rows.
+   */
+  cloudinaryPublicId: text("cloudinary_public_id"),
   alt: text("alt").notNull().default(""),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

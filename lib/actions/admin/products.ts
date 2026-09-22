@@ -16,6 +16,7 @@ import {
 } from "@/lib/data/admin/products";
 import { slugify, isValidSlug } from "@/lib/utils/slugify";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { deleteCloudinaryAssets, isCloudinaryConfigured } from "@/lib/cloudinary";
 import type { ActionState } from "@/types/action";
 import type { CreateProductInput, UpdateProductInput } from "@/types/product";
 
@@ -327,6 +328,7 @@ export async function updateProductAction(
 
 /**
  * Server Action: Delete Product
+ * Cleans up Cloudinary assets before removing the product from the database.
  */
 export async function deleteProductAction(id: string): Promise<ActionState> {
   await requireAdmin();
@@ -355,6 +357,28 @@ export async function deleteProductAction(id: string): Promise<ActionState> {
       };
     }
 
+    // 1. Clean up Cloudinary assets before DB deletion
+    //    Only attempted if Cloudinary is configured and images have public IDs.
+    if (isCloudinaryConfigured && existing.images.length > 0) {
+      const publicIds = existing.images
+        .map((img) => img.cloudinaryPublicId)
+        .filter((id): id is string => Boolean(id));
+
+      if (publicIds.length > 0) {
+        const results = await deleteCloudinaryAssets(publicIds);
+        const failures = results.filter((r) => !r.success);
+        if (failures.length > 0) {
+          console.error(
+            `[Products] Failed to delete ${failures.length} Cloudinary asset(s) during product deletion:`,
+            failures.map((f) => f.publicId)
+          );
+          // Continue with DB deletion — DB cascade will remove image records.
+          // Cloudinary orphans are logged for manual cleanup.
+        }
+      }
+    }
+
+    // 2. Delete product from DB (cascade removes product_images records)
     const deleted = await adminDeleteProduct(id);
     if (!deleted) {
       return {
