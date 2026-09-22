@@ -10,6 +10,7 @@ import {
 import { INITIAL_ACTION_STATE } from "@/types/action";
 import type { Product } from "@/types/product";
 import type { Category } from "@/types/category";
+import { ProductImageManager } from "@/components/admin/product-image-manager";
 
 interface ProductFormProps {
   product?: Product;
@@ -397,6 +398,43 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               <p className="text-xs text-red-500 font-medium">{state.errors.seoDescription[0]}</p>
             )}
           </div>
+        </fieldset>
+
+        {/* Product Images */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
+            Product Images
+          </legend>
+
+          {isEditing && product ? (
+            <ProductImageManager
+              productId={product.id}
+              initialImages={product.images}
+            />
+          ) : (
+            <div className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+              <svg
+                className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Images can be added after saving
+                </p>
+                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  Create the product first, then open it to upload and manage product images.
+                </p>
+              </div>
+            </div>
+          )}
         </fieldset>
 
         {/* Audit Info in Edit Mode */}

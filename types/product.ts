@@ -8,6 +8,7 @@ export type ProductStatus = "draft" | "published" | "archived";
 export interface ProductImage {
   id: string;
   url: string;
+  cloudinaryPublicId?: string;
   alt: string;
   sortOrder: number;
 }
@@ -46,7 +47,7 @@ export type CreateProductInput = {
   description: string;
   categoryId: string;
   tags: string[];
-  images?: Omit<ProductImage, "id">[];
+  images?: (Omit<ProductImage, "id"> & { cloudinaryPublicId?: string })[];
   featured?: boolean;
   recommended?: boolean;
   status?: ProductStatus;

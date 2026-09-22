@@ -1,13 +1,34 @@
 import { db } from "@/lib/db";
 import { products, productImages, categories } from "@/lib/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
-import type { Product, CreateProductInput, UpdateProductInput, ProductQueryParams } from "@/types/product";
+import { eq, and, desc, sql, asc } from "drizzle-orm";
+import type { Product, CreateProductInput, UpdateProductInput, ProductQueryParams, ProductImage } from "@/types/product";
 import { SEED_PRODUCTS } from "@/lib/db/seed-data";
+import crypto from "crypto";
 
 /**
  * Product Repository
  * Handles direct PostgreSQL execution via Drizzle ORM with null-safe development fallback.
  */
+
+// ─── Mapping helper ────────────────────────────────────────────────────────
+
+function mapDbImage(img: {
+  id: string;
+  url: string;
+  cloudinaryPublicId: string | null;
+  alt: string;
+  sortOrder: number;
+}): ProductImage {
+  return {
+    id: img.id,
+    url: img.url,
+    cloudinaryPublicId: img.cloudinaryPublicId ?? undefined,
+    alt: img.alt,
+    sortOrder: img.sortOrder,
+  };
+}
+
+// ─── Product Queries ───────────────────────────────────────────────────────
 
 export async function findProducts(params: ProductQueryParams = {}): Promise<Product[]> {
   if (!db) {
@@ -90,7 +111,7 @@ export async function findProducts(params: ProductQueryParams = {}): Promise<Pro
     with: {
       category: true,
       images: {
-        orderBy: [products.createdAt],
+        orderBy: [asc(productImages.sortOrder)],
       },
     },
   });
@@ -105,12 +126,7 @@ export async function findProducts(params: ProductQueryParams = {}): Promise<Pro
     categoryId: r.categoryId,
     categorySlug: r.category?.slug,
     tags: r.tags,
-    images: r.images.map((img) => ({
-      id: img.id,
-      url: img.url,
-      alt: img.alt,
-      sortOrder: img.sortOrder,
-    })),
+    images: r.images.map(mapDbImage),
     featured: r.featured,
     recommended: r.recommended,
     status: r.status as Product["status"],
@@ -134,7 +150,9 @@ export async function findProductById(id: string): Promise<Product | null> {
     where: eq(products.id, id),
     with: {
       category: true,
-      images: true,
+      images: {
+        orderBy: [asc(productImages.sortOrder)],
+      },
     },
   });
 
@@ -150,12 +168,7 @@ export async function findProductById(id: string): Promise<Product | null> {
     categoryId: row.categoryId,
     categorySlug: row.category?.slug,
     tags: row.tags,
-    images: row.images.map((img) => ({
-      id: img.id,
-      url: img.url,
-      alt: img.alt,
-      sortOrder: img.sortOrder,
-    })),
+    images: row.images.map(mapDbImage),
     featured: row.featured,
     recommended: row.recommended,
     status: row.status as Product["status"],
@@ -179,7 +192,9 @@ export async function findProductBySlug(slug: string): Promise<Product | null> {
     where: eq(products.slug, slug),
     with: {
       category: true,
-      images: true,
+      images: {
+        orderBy: [asc(productImages.sortOrder)],
+      },
     },
   });
 
@@ -195,12 +210,7 @@ export async function findProductBySlug(slug: string): Promise<Product | null> {
     categoryId: row.categoryId,
     categorySlug: row.category?.slug,
     tags: row.tags,
-    images: row.images.map((img) => ({
-      id: img.id,
-      url: img.url,
-      alt: img.alt,
-      sortOrder: img.sortOrder,
-    })),
+    images: row.images.map(mapDbImage),
     featured: row.featured,
     recommended: row.recommended,
     status: row.status as Product["status"],
@@ -254,17 +264,13 @@ export async function insertProduct(data: CreateProductInput): Promise<Product> 
       id: `img-${Date.now()}-${index}`,
       productId: id,
       url: img.url,
+      cloudinaryPublicId: img.cloudinaryPublicId ?? null,
       alt: img.alt,
       sortOrder: img.sortOrder ?? index,
       createdAt: now,
     }));
     const createdImages = await db.insert(productImages).values(imgValues).returning();
-    insertedImages = createdImages.map((img) => ({
-      id: img.id,
-      url: img.url,
-      alt: img.alt,
-      sortOrder: img.sortOrder,
-    }));
+    insertedImages = createdImages.map(mapDbImage);
   }
 
   return {
@@ -335,4 +341,162 @@ export async function deleteProductById(id: string): Promise<boolean> {
 
   const result = await db.delete(products).where(eq(products.id, id)).returning();
   return result.length > 0;
+}
+
+// ─── Product Image Queries ─────────────────────────────────────────────────
+
+/**
+ * Find a single product image record by its ID.
+ */
+export async function findProductImageById(imageId: string): Promise<ProductImage | null> {
+  if (!db) return null;
+
+  const row = await db.query.productImages.findFirst({
+    where: eq(productImages.id, imageId),
+  });
+
+  return row ? mapDbImage(row) : null;
+}
+
+/**
+ * Find a product image record with its product relationship for ownership verification.
+ */
+export async function findProductImageWithProduct(
+  imageId: string
+): Promise<{ image: ProductImage; productId: string } | null> {
+  if (!db) return null;
+
+  const row = await db.query.productImages.findFirst({
+    where: eq(productImages.id, imageId),
+  });
+
+  if (!row) return null;
+
+  return {
+    image: mapDbImage(row),
+    productId: row.productId,
+  };
+}
+
+/**
+ * Find all images for a product ordered by sort_order ascending.
+ */
+export async function findProductImages(productId: string): Promise<ProductImage[]> {
+  if (!db) return [];
+
+  const rows = await db.query.productImages.findMany({
+    where: eq(productImages.productId, productId),
+    orderBy: [asc(productImages.sortOrder)],
+  });
+
+  return rows.map(mapDbImage);
+}
+
+export interface InsertProductImageData {
+  productId: string;
+  url: string;
+  cloudinaryPublicId?: string;
+  alt: string;
+  sortOrder: number;
+}
+
+/**
+ * Insert a single product image record after a successful Cloudinary upload.
+ */
+export async function insertProductImage(
+  data: InsertProductImageData
+): Promise<ProductImage> {
+  if (!db) {
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
+  }
+
+  const id = `img-${crypto.randomBytes(6).toString("hex")}`;
+
+  const [row] = await db
+    .insert(productImages)
+    .values({
+      id,
+      productId: data.productId,
+      url: data.url,
+      cloudinaryPublicId: data.cloudinaryPublicId ?? null,
+      alt: data.alt,
+      sortOrder: data.sortOrder,
+      createdAt: new Date(),
+    })
+    .returning();
+
+  return mapDbImage(row);
+}
+
+export interface UpdateProductImageData {
+  alt?: string;
+  sortOrder?: number;
+}
+
+/**
+ * Update a product image's alt text or sort order.
+ */
+export async function updateProductImageById(
+  imageId: string,
+  data: UpdateProductImageData
+): Promise<ProductImage | null> {
+  if (!db) {
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
+  }
+
+  const [row] = await db
+    .update(productImages)
+    .set({
+      ...(data.alt !== undefined ? { alt: data.alt } : {}),
+      ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
+    })
+    .where(eq(productImages.id, imageId))
+    .returning();
+
+  return row ? mapDbImage(row) : null;
+}
+
+/**
+ * Delete a single product image record from the database.
+ */
+export async function deleteProductImageById(imageId: string): Promise<boolean> {
+  if (!db) {
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
+  }
+
+  const result = await db
+    .delete(productImages)
+    .where(eq(productImages.id, imageId))
+    .returning();
+
+  return result.length > 0;
+}
+
+/**
+ * Batch update sort orders for a product's images.
+ * Used when the admin reorders images.
+ */
+export async function updateProductImageSortOrders(
+  updates: { id: string; sortOrder: number }[]
+): Promise<void> {
+  if (!db) {
+    throw new Error(
+      "Database connection is not available. Real mutations require a configured DATABASE_URL."
+    );
+  }
+
+  await Promise.all(
+    updates.map(({ id, sortOrder }) =>
+      db!
+        .update(productImages)
+        .set({ sortOrder })
+        .where(eq(productImages.id, id))
+    )
+  );
 }
