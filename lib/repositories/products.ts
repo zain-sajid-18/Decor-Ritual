@@ -1,8 +1,15 @@
 import { db } from "@/lib/db";
 import { products, productImages, categories } from "@/lib/db/schema";
 import { eq, and, desc, sql, asc } from "drizzle-orm";
-import type { Product, CreateProductInput, UpdateProductInput, ProductQueryParams, ProductImage } from "@/types/product";
-import { SEED_PRODUCTS } from "@/lib/db/seed-data";
+import type {
+  Product,
+  CreateProductInput,
+  UpdateProductInput,
+  ProductQueryParams,
+  ProductImage,
+  PaginatedProductsResult,
+} from "@/types/product";
+import { SEED_PRODUCTS, SEED_CATEGORIES } from "@/lib/db/seed-data";
 import crypto from "crypto";
 
 /**
@@ -53,13 +60,25 @@ export async function findProducts(params: ProductQueryParams = {}): Promise<Pro
       result = result.filter((p) => p.tags.includes(params.tag!));
     }
     if (params.search) {
-      const q = params.search.toLowerCase();
+      const q = params.search.toLowerCase().trim();
       result = result.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.shortDescription.toLowerCase().includes(q) ||
+          (p.brand && p.brand.toLowerCase().includes(q)) ||
           p.tags.some((t) => t.toLowerCase().includes(q))
       );
+    }
+
+    if (params.sort === "newest") {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (params.sort === "a-z") {
+      result.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (params.sort === "featured") {
+      result.sort((a, b) => {
+        if (a.featured !== b.featured) return a.featured ? -1 : 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
     }
 
     if (params.offset) {
@@ -97,15 +116,24 @@ export async function findProducts(params: ProductQueryParams = {}): Promise<Pro
   }
 
   if (params.search) {
-    const term = `%${params.search}%`;
+    const term = `%${params.search.trim()}%`;
     conditions.push(
-      sql`(${products.title} ILIKE ${term} OR ${products.shortDescription} ILIKE ${term})`
+      sql`(${products.title} ILIKE ${term} OR ${products.shortDescription} ILIKE ${term} OR (${products.brand} IS NOT NULL AND ${products.brand} ILIKE ${term}) OR array_to_string(${products.tags}, ' ') ILIKE ${term})`
     );
+  }
+
+  let orderByClause = [desc(products.createdAt)];
+  if (params.sort === "newest") {
+    orderByClause = [desc(products.createdAt)];
+  } else if (params.sort === "a-z") {
+    orderByClause = [asc(products.title)];
+  } else if (params.sort === "featured") {
+    orderByClause = [desc(products.featured), desc(products.createdAt)];
   }
 
   const rows = await db.query.products.findMany({
     where: conditions.length > 0 ? and(...conditions) : undefined,
-    orderBy: [desc(products.createdAt)],
+    orderBy: orderByClause,
     limit: params.limit,
     offset: params.offset,
     with: {
@@ -139,6 +167,173 @@ export async function findProducts(params: ProductQueryParams = {}): Promise<Pro
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   }));
+}
+
+export async function findProductsWithPagination(
+  params: ProductQueryParams & { page?: number; pageSize?: number } = {}
+): Promise<PaginatedProductsResult> {
+  const page = Math.max(1, params.page || 1);
+  const pageSize = Math.max(1, Math.min(100, params.pageSize || 12));
+  const offset = (page - 1) * pageSize;
+
+  if (!db) {
+    let result = [...SEED_PRODUCTS];
+
+    if (params.status) {
+      result = result.filter((p) => p.status === params.status);
+    }
+    if (params.categorySlug) {
+      const activeCat = SEED_CATEGORIES.find(
+        (c) => c.slug === params.categorySlug && c.isActive
+      );
+      if (!activeCat) {
+        return { products: [], totalCount: 0, page, totalPages: 1, pageSize };
+      }
+      result = result.filter((p) => p.categorySlug === params.categorySlug);
+    }
+    if (params.categoryId) {
+      result = result.filter((p) => p.categoryId === params.categoryId);
+    }
+    if (params.featured !== undefined) {
+      result = result.filter((p) => p.featured === params.featured);
+    }
+    if (params.recommended !== undefined) {
+      result = result.filter((p) => p.recommended === params.recommended);
+    }
+    if (params.tag) {
+      result = result.filter((p) => p.tags.includes(params.tag!));
+    }
+    if (params.search) {
+      const q = params.search.toLowerCase().trim();
+      result = result.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.shortDescription.toLowerCase().includes(q) ||
+          (p.brand && p.brand.toLowerCase().includes(q)) ||
+          p.tags.some((t) => t.toLowerCase().includes(q))
+      );
+    }
+
+    if (params.sort === "newest") {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (params.sort === "a-z") {
+      result.sort((a, b) => a.title.localeCompare(b.title));
+    } else {
+      // Default: featured first, then newest
+      result.sort((a, b) => {
+        if (a.featured !== b.featured) return a.featured ? -1 : 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    }
+
+    const totalCount = result.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const paginatedProducts = result.slice(offset, offset + pageSize);
+
+    return {
+      products: paginatedProducts,
+      totalCount,
+      page,
+      totalPages,
+      pageSize,
+    };
+  }
+
+  const conditions = [];
+
+  if (params.status) {
+    conditions.push(eq(products.status, params.status));
+  }
+  if (params.categoryId) {
+    conditions.push(eq(products.categoryId, params.categoryId));
+  }
+  if (params.featured !== undefined) {
+    conditions.push(eq(products.featured, params.featured));
+  }
+  if (params.recommended !== undefined) {
+    conditions.push(eq(products.recommended, params.recommended));
+  }
+
+  if (params.categorySlug) {
+    const cat = await db.query.categories.findFirst({
+      where: and(eq(categories.slug, params.categorySlug), eq(categories.isActive, true)),
+    });
+    if (!cat) {
+      return { products: [], totalCount: 0, page, totalPages: 1, pageSize };
+    }
+    conditions.push(eq(products.categoryId, cat.id));
+  }
+
+  if (params.search) {
+    const term = `%${params.search.trim()}%`;
+    conditions.push(
+      sql`(${products.title} ILIKE ${term} OR ${products.shortDescription} ILIKE ${term} OR (${products.brand} IS NOT NULL AND ${products.brand} ILIKE ${term}) OR array_to_string(${products.tags}, ' ') ILIKE ${term})`
+    );
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  // Count query
+  const countResult = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(products)
+    .where(whereClause);
+  const totalCount = Number(countResult[0]?.count ?? 0);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  let orderByClause = [desc(products.featured), desc(products.createdAt)];
+  if (params.sort === "newest") {
+    orderByClause = [desc(products.createdAt)];
+  } else if (params.sort === "a-z") {
+    orderByClause = [asc(products.title)];
+  } else if (params.sort === "featured") {
+    orderByClause = [desc(products.featured), desc(products.createdAt)];
+  }
+
+  const rows = await db.query.products.findMany({
+    where: whereClause,
+    orderBy: orderByClause,
+    limit: pageSize,
+    offset,
+    with: {
+      category: true,
+      images: {
+        orderBy: [asc(productImages.sortOrder)],
+      },
+    },
+  });
+
+  const mappedProducts: Product[] = rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    slug: r.slug,
+    brand: r.brand ?? undefined,
+    shortDescription: r.shortDescription,
+    description: r.description,
+    categoryId: r.categoryId,
+    categorySlug: r.category?.slug,
+    tags: r.tags,
+    images: r.images.map(mapDbImage),
+    featured: r.featured,
+    recommended: r.recommended,
+    status: r.status as Product["status"],
+    amazonUrl: r.amazonUrl,
+    asin: r.asin ?? undefined,
+    seo:
+      r.seoTitle || r.seoDescription
+        ? { title: r.seoTitle ?? undefined, description: r.seoDescription ?? undefined }
+        : undefined,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  }));
+
+  return {
+    products: mappedProducts,
+    totalCount,
+    page,
+    totalPages,
+    pageSize,
+  };
 }
 
 export async function findProductById(id: string): Promise<Product | null> {

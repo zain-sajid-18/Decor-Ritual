@@ -5,7 +5,7 @@ import { getCategoryBySlug } from "@/lib/data/categories";
 import { getProductsByCategory } from "@/lib/data/products";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Badge } from "@/components/ui/badge";
+import { ProductCard } from "@/components/storefront/product-card";
 
 type CategoryDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -77,7 +77,7 @@ export default async function StorefrontCategoryDetailPage({
           description="There are currently no published products assigned to this category."
           action={
             <Link
-              href="/products"
+              href="/"
               className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               Browse all products
@@ -85,43 +85,9 @@ export default async function StorefrontCategoryDetailPage({
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product) => (
-            <Link
-              key={product.id}
-              href={`/products/${product.slug}`}
-              className="group flex flex-col justify-between rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  {product.brand && (
-                    <span className="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-medium">
-                      {product.brand}
-                    </span>
-                  )}
-                  {product.featured && (
-                    <Badge variant="success" className="text-[10px] px-1.5 py-0">
-                      Featured
-                    </Badge>
-                  )}
-                </div>
-
-                <h3 className="text-base font-semibold text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-300 line-clamp-2">
-                  {product.title}
-                </h3>
-
-                <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3">
-                  {product.shortDescription}
-                </p>
-              </div>
-
-              <div className="mt-6 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                <span className="text-zinc-500 dark:text-zinc-400">View details</span>
-                <span className="font-medium text-zinc-900 dark:text-zinc-100 group-hover:translate-x-0.5 transition-transform">
-                  →
-                </span>
-              </div>
-            </Link>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       )}

@@ -1,223 +1,147 @@
 import Link from "next/link";
-import { getFeaturedProducts, getRecommendedProducts } from "@/lib/data/products";
+import type { Metadata } from "next";
+import { getPaginatedProducts } from "@/lib/data/products";
 import { getCategories } from "@/lib/data/categories";
-import { Badge } from "@/components/ui/badge";
+import type { ProductSortOption } from "@/types/product";
+import { ProductCard } from "@/components/storefront/product-card";
+import { SearchInput } from "@/components/storefront/search-input";
+import { FilterSortBar } from "@/components/storefront/filter-sort-bar";
+import { Pagination } from "@/components/storefront/pagination";
 
-export const metadata = {
-  title: "ZF Store | Curated Product Discovery",
+export const metadata: Metadata = {
+  title: "ZF Store | Product Discovery",
   description:
-    "Explore curated collections and discovery guides. Direct links to Amazon for secure checkout and rapid fulfillment.",
+    "Discover purposeful, verified products curated for utility and quality. Direct links to Amazon for fulfillment.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
-export default async function StorefrontHomePage() {
-  const [featuredProducts, recommendedProducts, categories] = await Promise.all([
-    getFeaturedProducts(4),
-    getRecommendedProducts(4),
+type StorefrontHomePageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function StorefrontHomePage({
+  searchParams,
+}: StorefrontHomePageProps) {
+  const resolvedParams = await searchParams;
+
+  const query =
+    typeof resolvedParams.q === "string" && resolvedParams.q.trim()
+      ? resolvedParams.q.trim()
+      : undefined;
+
+  const categorySlug =
+    typeof resolvedParams.category === "string" && resolvedParams.category.trim()
+      ? resolvedParams.category.trim()
+      : undefined;
+
+  const sort = (
+    typeof resolvedParams.sort === "string" && ["featured", "newest", "a-z"].includes(resolvedParams.sort)
+      ? resolvedParams.sort
+      : "featured"
+  ) as ProductSortOption;
+
+  const parsedPage =
+    typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page, 10) : 1;
+  const currentPage = !isNaN(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+
+  // Retrieve published products and active categories via Public DAL
+  const [paginatedData, categories] = await Promise.all([
+    getPaginatedProducts({
+      search: query,
+      categorySlug,
+      sort,
+      page: currentPage,
+      pageSize: 12,
+    }),
     getCategories(),
   ]);
 
+  const { products, totalCount, totalPages } = paginatedData;
+  const hasActiveFilters = Boolean(query || categorySlug || (sort && sort !== "featured"));
+
   return (
-    <div className="space-y-16 py-8 sm:py-12">
-      {/* Development Fixture Notice */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
-          <span className="font-semibold uppercase tracking-wider">Dev Environment:</span>
-          <span>Catalog currently displays development fixtures for architecture and UI validation.</span>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+      {/* Discovery Shell: Store identity and search */}
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-200 pb-6 dark:border-zinc-800">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+            Curated Products
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Explore quality items curated for everyday utility and home living.
+          </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="w-full sm:w-auto sm:min-w-[320px]">
+          <SearchInput initialQuery={query || ""} />
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl space-y-6">
-          <Badge variant="outline" className="text-zinc-600 dark:text-zinc-400">
-            Curated Discovery Platform
-          </Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl lg:text-6xl">
-            Thoughtfully curated products, fulfilled by Amazon.
-          </h1>
-          <p className="text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            ZF Store connects you with purposeful products across curated lifestyle categories.
-            Browse our selections, inspect details, and transition directly to Amazon for trusted
-            checkout and delivery.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-2">
-            <Link
-              href="/products"
-              className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+      {/* Category Pills & Sort Controls */}
+      <FilterSortBar
+        categories={categories}
+        currentCategory={categorySlug}
+        currentSort={sort}
+        totalCount={totalCount}
+      />
+
+      {/* Products Presentation */}
+      {products.length === 0 ? (
+        <div className="my-12 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-12 text-center dark:border-zinc-800 dark:bg-zinc-900/30">
+          <div className="mx-auto max-w-md space-y-3">
+            <svg
+              className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
             >
-              Explore All Products →
-            </Link>
-            <Link
-              href="/categories"
-              className="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              Browse Categories
-            </Link>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              {hasActiveFilters ? "No products matched your search" : "No products available yet"}
+            </h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              {hasActiveFilters
+                ? "Try adjusting your search terms, choosing a different category, or clearing the active filters."
+                : "Our catalog is currently being updated. Please check back soon."}
+            </p>
+            {hasActiveFilters && (
+              <div className="pt-2">
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center rounded-lg bg-zinc-900 px-4 py-2 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+                >
+                  Clear all filters
+                </Link>
+              </div>
+            )}
           </div>
         </div>
-      </section>
-
-      {/* Active Categories Section */}
-      {categories.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-800">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Explore Categories
-              </h2>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                Browse our active catalog taxonomy
-              </p>
-            </div>
-            <Link
-              href="/categories"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              View all →
-            </Link>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/categories/${cat.slug}`}
-                className="group rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
-              >
-                <div className="flex items-start justify-between">
-                  <h3 className="text-base font-semibold text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-300">
-                    {cat.name}
-                  </h3>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">#{cat.displayOrder}</span>
-                </div>
-                {cat.description && (
-                  <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2">
-                    {cat.description}
-                  </p>
-                )}
-                <div className="mt-4 flex items-center text-xs font-medium text-zinc-900 dark:text-zinc-100">
-                  Discover category <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
-                </div>
-              </Link>
+      ) : (
+        <>
+          {/* Responsive Product Grid */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        </section>
-      )}
 
-      {/* Featured Products Section */}
-      {featuredProducts.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-800">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Featured Selections
-              </h2>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                Hand-picked spotlight items from our collection
-              </p>
-            </div>
-            <Link
-              href="/products"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              All products →
-            </Link>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/products/${product.slug}`}
-                className="group flex flex-col justify-between rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    {product.brand && (
-                      <span className="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-medium">
-                        {product.brand}
-                      </span>
-                    )}
-                    <Badge variant="success" className="text-[10px] px-2 py-0">
-                      Featured
-                    </Badge>
-                  </div>
-                  <h3 className="text-base font-semibold text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-300 line-clamp-2">
-                    {product.title}
-                  </h3>
-                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3">
-                    {product.shortDescription}
-                  </p>
-                </div>
-
-                <div className="mt-6 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                  <span className="text-zinc-500 dark:text-zinc-400">View details</span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100 group-hover:translate-x-0.5 transition-transform">
-                    →
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Recommended Products Section */}
-      {recommendedProducts.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-800">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Recommended by ZF Store
-              </h2>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                Curator favorites with proven utility
-              </p>
-            </div>
-            <Link
-              href="/products"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              Browse catalog →
-            </Link>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {recommendedProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/products/${product.slug}`}
-                className="group flex flex-col justify-between rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    {product.brand && (
-                      <span className="text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-medium">
-                        {product.brand}
-                      </span>
-                    )}
-                    <Badge variant="outline" className="text-[10px] px-2 py-0">
-                      Recommended
-                    </Badge>
-                  </div>
-                  <h3 className="text-base font-semibold text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-300 line-clamp-2">
-                    {product.title}
-                  </h3>
-                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-3">
-                    {product.shortDescription}
-                  </p>
-                </div>
-
-                <div className="mt-6 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                  <span className="text-zinc-500 dark:text-zinc-400">View details</span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100 group-hover:translate-x-0.5 transition-transform">
-                    →
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            searchParams={resolvedParams}
+          />
+        </>
       )}
     </div>
   );

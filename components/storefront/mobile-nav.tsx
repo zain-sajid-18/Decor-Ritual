@@ -39,16 +39,10 @@ export function MobileNav() {
         <div className="absolute top-16 left-0 right-0 z-50 bg-white border-b border-zinc-200 p-4 shadow-lg dark:bg-zinc-950 dark:border-zinc-800">
           <nav className="flex flex-col space-y-3">
             <Link
-              href="/products"
+              href="/"
               className="text-sm font-medium text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
             >
               Discover Products
-            </Link>
-            <Link
-              href="/categories"
-              className="text-sm font-medium text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
-            >
-              Categories
             </Link>
           </nav>
         </div>

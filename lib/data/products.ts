@@ -1,10 +1,28 @@
-import { findProducts, findProductBySlug } from "@/lib/repositories/products";
-import type { Product, ProductQueryParams } from "@/types/product";
+import { findProducts, findProductBySlug, findProductsWithPagination } from "@/lib/repositories/products";
+import type { Product, ProductQueryParams, ProductSortOption, PaginatedProductsResult } from "@/types/product";
+import { getCategoryBySlug } from "@/lib/data/categories";
 
 /**
  * Public Data Access Layer: Products
- * Strictly enforces that public shoppers only see published products.
+ * Strictly enforces that public shoppers only see published products and active categories.
  */
+
+export async function getPaginatedProducts(options: {
+  search?: string;
+  categorySlug?: string;
+  sort?: ProductSortOption;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<PaginatedProductsResult> {
+  return findProductsWithPagination({
+    status: "published",
+    search: options.search,
+    categorySlug: options.categorySlug,
+    sort: options.sort || "featured",
+    page: options.page || 1,
+    pageSize: options.pageSize || 12,
+  });
+}
 
 export async function getProducts(
   params: Omit<ProductQueryParams, "status"> = {}
@@ -19,6 +37,12 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   const product = await findProductBySlug(slug);
   if (!product || product.status !== "published") {
     return null;
+  }
+  if (product.categorySlug) {
+    const category = await getCategoryBySlug(product.categorySlug);
+    if (!category || !category.isActive) {
+      return null;
+    }
   }
   return product;
 }
