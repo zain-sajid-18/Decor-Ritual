@@ -3,9 +3,21 @@ import { getCategories } from "@/lib/data/categories";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Categories | ZF Store",
   description: "Browse all curated shopping and decor categories in ZF Store.",
+  alternates: {
+    canonical: "/categories",
+  },
+  openGraph: {
+    title: "Categories | ZF Store",
+    description: "Browse all curated shopping and decor categories in ZF Store.",
+    url: "/categories",
+    siteName: "ZF Store",
+    type: "website",
+  },
 };
 
 export default async function StorefrontCategoriesPage() {

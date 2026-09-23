@@ -17,6 +17,7 @@ import {
 import { slugify, isValidSlug } from "@/lib/utils/slugify";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { deleteCloudinaryAssets, isCloudinaryConfigured } from "@/lib/cloudinary";
+import { isValidAmazonUrl } from "@/lib/amazon/domains";
 import type { ActionState } from "@/types/action";
 import type { CreateProductInput, UpdateProductInput } from "@/types/product";
 
@@ -78,7 +79,11 @@ const ProductFormSchema = z.object({
     .string({ message: "Amazon URL is required." })
     .trim()
     .min(1, "Amazon URL is required.")
-    .url("Amazon URL must be a valid URL."),
+    .url("Amazon URL must be a valid URL.")
+    .refine((url) => isValidAmazonUrl(url), {
+      message:
+        "URL must be a valid Amazon product URL (e.g., https://www.amazon.com/dp/... or https://amzn.to/...).",
+    }),
   asin: z
     .string()
     .trim()

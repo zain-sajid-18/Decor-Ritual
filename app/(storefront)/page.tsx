@@ -9,11 +9,25 @@ import { FilterSortBar } from "@/components/storefront/filter-sort-bar";
 import { Pagination } from "@/components/storefront/pagination";
 
 export const metadata: Metadata = {
-  title: "ZF Store | Product Discovery",
+  title: "Product Discovery | ZF Store",
   description:
     "Discover purposeful, verified products curated for utility and quality. Direct links to Amazon for fulfillment.",
   alternates: {
     canonical: "/",
+  },
+  openGraph: {
+    title: "Product Discovery | ZF Store",
+    description:
+      "Discover purposeful, verified products curated for utility and quality. Direct links to Amazon for fulfillment.",
+    url: "/",
+    siteName: "ZF Store",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Product Discovery | ZF Store",
+    description:
+      "Discover purposeful, verified products curated for utility and quality. Direct links to Amazon for fulfillment.",
   },
 };
 
