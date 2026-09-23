@@ -1,5 +1,5 @@
 import assert from "assert";
-import { isValidAmazonUrl, SUPPORTED_AMAZON_DOMAINS } from "@/lib/amazon/domains";
+import { isValidAmazonUrl } from "@/lib/amazon/domains";
 import { buildAmazonOutboundUrl, getAmazonOutboundUrl } from "@/lib/amazon/url";
 import { getAmazonAssociateTag } from "@/lib/amazon/config";
 import { getSiteUrl } from "@/lib/seo/config";
