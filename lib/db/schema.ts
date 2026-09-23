@@ -1,68 +1,96 @@
-import { pgTable, text, boolean, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, integer, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 /**
  * Categories Table
  */
-export const categories = pgTable("categories", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  description: text("description"),
-  image: text("image"),
-  isActive: boolean("is_active").notNull().default(true),
-  displayOrder: integer("display_order").notNull().default(0),
-  seoTitle: text("seo_title"),
-  seoDescription: text("seo_description"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const categories = pgTable(
+  "categories",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    description: text("description"),
+    image: text("image"),
+    isActive: boolean("is_active").notNull().default(true),
+    displayOrder: integer("display_order").notNull().default(0),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Storefront category navigation: list active categories ordered by displayOrder
+    index("idx_categories_active_order").on(t.isActive, t.displayOrder),
+  ]
+);
 
 /**
  * Products Table
  */
-export const products = pgTable("products", {
-  id: text("id").primaryKey(),
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  brand: text("brand"),
-  shortDescription: text("short_description").notNull(),
-  description: text("description").notNull(),
-  categoryId: text("category_id")
-    .notNull()
-    .references(() => categories.id, { onDelete: "restrict" }),
-  tags: jsonb("tags").$type<string[]>().notNull().default([]),
-  status: text("status", { enum: ["draft", "published", "archived"] })
-    .notNull()
-    .default("draft"),
-  featured: boolean("featured").notNull().default(false),
-  recommended: boolean("recommended").notNull().default(false),
-  amazonUrl: text("amazon_url").notNull(),
-  asin: text("asin"),
-  seoTitle: text("seo_title"),
-  seoDescription: text("seo_description"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const products = pgTable(
+  "products",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull().unique(),
+    brand: text("brand"),
+    shortDescription: text("short_description").notNull(),
+    description: text("description").notNull(),
+    categoryId: text("category_id")
+      .notNull()
+      .references(() => categories.id, { onDelete: "restrict" }),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    status: text("status", { enum: ["draft", "published", "archived"] })
+      .notNull()
+      .default("draft"),
+    featured: boolean("featured").notNull().default(false),
+    recommended: boolean("recommended").notNull().default(false),
+    amazonUrl: text("amazon_url").notNull(),
+    asin: text("asin"),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Storefront listing: published products (the most common query predicate)
+    index("idx_products_status").on(t.status),
+    // Category page: all products in a category (frequently joined with status)
+    index("idx_products_category_id").on(t.categoryId),
+    // Combined: published products in a specific category (covers the JOIN case)
+    index("idx_products_category_status").on(t.categoryId, t.status),
+    // Featured / recommended carousels on the storefront homepage
+    index("idx_products_featured").on(t.featured),
+    index("idx_products_recommended").on(t.recommended),
+  ]
+);
 
 /**
  * Product Images Table
  */
-export const productImages = pgTable("product_images", {
-  id: text("id").primaryKey(),
-  productId: text("product_id")
-    .notNull()
-    .references(() => products.id, { onDelete: "cascade" }),
-  url: text("url").notNull(),
-  /**
-   * Cloudinary public identifier for reliable asset deletion.
-   * Nullable to preserve backward compatibility with existing rows.
-   */
-  cloudinaryPublicId: text("cloudinary_public_id"),
-  alt: text("alt").notNull().default(""),
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const productImages = pgTable(
+  "product_images",
+  {
+    id: text("id").primaryKey(),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    /**
+     * Cloudinary public identifier for reliable asset deletion.
+     * Nullable to preserve backward compatibility with existing rows.
+     */
+    cloudinaryPublicId: text("cloudinary_public_id"),
+    alt: text("alt").notNull().default(""),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Image gallery: ordered images for a product (product detail + admin)
+    index("idx_product_images_product_sort").on(t.productId, t.sortOrder),
+  ]
+);
 
 /**
  * Entity Relationships

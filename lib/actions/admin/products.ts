@@ -218,6 +218,7 @@ export async function createProductAction(
 
   revalidatePath("/admin/products");
   revalidatePath("/products");
+  revalidatePath("/");
   redirect("/admin/products");
 }
 
@@ -323,6 +324,7 @@ export async function updateProductAction(
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   revalidatePath("/products");
+  revalidatePath("/");
   revalidatePath(`/products/${data.slug}`);
   if (existingProduct.slug !== data.slug) {
     revalidatePath(`/products/${existingProduct.slug}`);
@@ -394,6 +396,7 @@ export async function deleteProductAction(id: string): Promise<ActionState> {
 
     revalidatePath("/admin/products");
     revalidatePath("/products");
+    revalidatePath("/");
     revalidatePath(`/products/${existing.slug}`);
   } catch (error) {
     if (isNextRedirect(error)) throw error;
@@ -426,6 +429,7 @@ export async function publishProductAction(id: string): Promise<ActionState> {
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${id}`);
     revalidatePath("/products");
+    revalidatePath("/");
     revalidatePath(`/products/${updated.slug}`);
     return { success: true, message: "Product published successfully." };
   } catch {
@@ -452,6 +456,7 @@ export async function archiveProductAction(id: string): Promise<ActionState> {
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${id}`);
     revalidatePath("/products");
+    revalidatePath("/");
     revalidatePath(`/products/${updated.slug}`);
     return { success: true, message: "Product archived successfully." };
   } catch {
@@ -478,6 +483,7 @@ export async function unpublishProductAction(id: string): Promise<ActionState> {
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${id}`);
     revalidatePath("/products");
+    revalidatePath("/");
     revalidatePath(`/products/${updated.slug}`);
     return { success: true, message: "Product reverted to draft." };
   } catch {

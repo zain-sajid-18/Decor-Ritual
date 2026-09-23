@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { isDbAvailable } from "@/lib/db";
 import { adminGetUserByEmail } from "@/lib/data/admin/admin-users";
@@ -11,7 +12,25 @@ import {
   setSessionCookie,
   clearSessionCookie,
 } from "@/lib/auth/session";
+import { loginRateLimiter } from "@/lib/security/rate-limit";
 import type { ActionState } from "@/types/action";
+
+/**
+ * Derives a stable rate-limit identifier from the incoming request headers.
+ * Prefers the first IP in X-Forwarded-For, falls back to X-Real-IP, then
+ * a sentinel value so rate limiting still functions behind a misconfigured proxy.
+ */
+async function getRateLimitIdentifier(): Promise<string> {
+  const headerStore = await headers();
+  const forwarded = headerStore.get("x-forwarded-for");
+  if (forwarded) {
+    const ip = forwarded.split(",")[0].trim();
+    if (ip) return ip;
+  }
+  const realIp = headerStore.get("x-real-ip");
+  if (realIp) return realIp.trim();
+  return "unknown";
+}
 
 const LoginSchema = z.object({
   email: z
@@ -38,6 +57,15 @@ export async function loginAction(
   prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  // ── Rate limiting ──────────────────────────────────────────────────────────
+  // Check BEFORE any schema validation or DB queries to minimise work done per
+  // rejected request and to prevent timing-based enumeration of valid emails.
+  const identifier = await getRateLimitIdentifier();
+  const rateLimit = loginRateLimiter.check(identifier);
+  if (!rateLimit.allowed) {
+    return { success: false, message: rateLimit.message };
+  }
+
   const rawData = {
     email: formData.get("email"),
     password: formData.get("password"),
@@ -101,6 +129,9 @@ export async function loginAction(
     });
 
     await setSessionCookie(token);
+
+    // Reset rate limit counter on successful login
+    loginRateLimiter.reset(identifier);
   } catch (error) {
     // Never expose internal error details to the client
     const message = (error as Error)?.message ?? "";
