@@ -7,11 +7,43 @@
  *   INITIAL_ADMIN_EMAIL="admin@example.com" INITIAL_ADMIN_PASSWORD="secret" npx tsx scripts/create-admin.ts
  */
 
-import { isDbAvailable, db } from "../lib/db";
-import { adminUsers } from "../lib/db/schema";
-import { hashPassword } from "../lib/auth/password";
-import { eq } from "drizzle-orm";
+import fs from "node:fs";
+import path from "node:path";
 import crypto from "crypto";
+
+// Load .env.local and .env if running standalone via tsx/node
+function loadEnv() {
+  for (const envFile of [".env.local", ".env"]) {
+    const fullPath = path.resolve(process.cwd(), envFile);
+    if (fs.existsSync(fullPath)) {
+      const content = fs.readFileSync(fullPath, "utf-8");
+      for (const line of content.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx > 0) {
+          const key = trimmed.slice(0, eqIdx).trim();
+          let val = trimmed.slice(eqIdx + 1).trim();
+          if (
+            (val.startsWith('"') && val.endsWith('"')) ||
+            (val.startsWith("'") && val.endsWith("'"))
+          ) {
+            val = val.slice(1, -1);
+          }
+          if (!process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      }
+    }
+  }
+}
+
+loadEnv();
+
+import { hashPassword } from "../lib/auth/password";
+import { adminUsers } from "../lib/db/schema";
+import { eq } from "drizzle-orm";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -42,9 +74,11 @@ async function main() {
     process.exit(1);
   }
 
+  const { isDbAvailable, db } = await import("../lib/db");
+
   if (!isDbAvailable || !db) {
     console.error(
-      "Error: Database is not available. Please ensure DATABASE_URL is properly configured."
+      "Error: Database is not available. Please ensure DATABASE_URL is properly configured in .env or .env.local."
     );
     process.exit(1);
   }
@@ -83,6 +117,8 @@ async function main() {
     });
     console.log(`✓ Admin user ${email} created successfully with ID: ${id}`);
   }
+
+  process.exit(0);
 }
 
 main().catch((err) => {
