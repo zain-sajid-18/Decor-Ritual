@@ -175,6 +175,7 @@ export async function createCategoryAction(
 
   revalidatePath("/admin/categories");
   revalidatePath("/categories");
+  revalidatePath("/");
   redirect("/admin/categories");
 }
 
@@ -274,6 +275,7 @@ export async function updateCategoryAction(
   revalidatePath("/admin/categories");
   revalidatePath(`/admin/categories/${id}`);
   revalidatePath("/categories");
+  revalidatePath("/");
   revalidatePath(`/categories/${data.slug}`);
   if (existingCategory.slug !== data.slug) {
     revalidatePath(`/categories/${existingCategory.slug}`);
@@ -332,6 +334,7 @@ export async function deleteCategoryAction(id: string): Promise<ActionState> {
 
     revalidatePath("/admin/categories");
     revalidatePath("/categories");
+    revalidatePath("/");
     revalidatePath(`/categories/${existing.slug}`);
   } catch (error) {
     if (isNextRedirect(error)) throw error;

@@ -182,6 +182,7 @@ export async function saveProductImageAction(
 
     revalidatePath(`/admin/products/${productId}`);
     revalidatePath(`/products/${product.slug}`);
+    revalidatePath("/");
 
     return { success: true, message: "Image saved successfully.", image };
   } catch (err) {
@@ -356,6 +357,11 @@ export async function deleteProductImageAction(
     return { success: false, message: "Failed to remove image record from database." };
   }
 
+  const product = await adminGetProductById(productId);
+  if (product) {
+    revalidatePath(`/products/${product.slug}`);
+  }
+  revalidatePath("/");
   revalidatePath(`/admin/products/${productId}`);
 
   if (cloudinaryWarning) {
