@@ -54,7 +54,7 @@ const securityHeaders = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: https://res.cloudinary.com",
+      "img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com",
       "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' https://api.cloudinary.com",
       "frame-src 'none'",
@@ -70,12 +70,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        /**
-         * Cloudinary image CDN — required for next/image optimization
-         * of product images stored in Cloudinary.
-         */
         protocol: "https",
         hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
     ],

@@ -47,24 +47,29 @@ export function FilterSortBar({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Category Pills and Sort Row */}
+    <div className="space-y-4 pt-2">
+      {/* Category Pills & Sort Row */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        
         {/* Category Navigation Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Filter by category">
+        <div 
+          className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0" 
+          role="tablist" 
+          aria-label="Filter products by collection"
+        >
           <button
             type="button"
             role="tab"
             aria-selected={!currentCategory}
             onClick={() => handleCategorySelect(undefined)}
             disabled={isPending}
-            className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+            className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold tracking-tight transition-all duration-200 active:scale-95 ${
               !currentCategory
-                ? "bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/20 ring-2 ring-amber-500/30"
+                : "bg-white text-stone-700 hover:bg-stone-100 hover:text-stone-900 border border-stone-200/80 dark:bg-stone-900/80 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100 dark:border-stone-800 shadow-2xs"
             }`}
           >
-            All Products
+            All Items
           </button>
 
           {categories.map((cat) => {
@@ -77,10 +82,10 @@ export function FilterSortBar({
                 aria-selected={isSelected}
                 onClick={() => handleCategorySelect(cat.slug)}
                 disabled={isPending}
-                className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold tracking-tight transition-all duration-200 active:scale-95 ${
                   isSelected
-                    ? "bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/20 ring-2 ring-amber-500/30"
+                    : "bg-white text-stone-700 hover:bg-stone-100 hover:text-stone-900 border border-stone-200/80 dark:bg-stone-900/80 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100 dark:border-stone-800 shadow-2xs"
                 }`}
               >
                 {cat.name}
@@ -90,28 +95,35 @@ export function FilterSortBar({
         </div>
 
         {/* Sort and Count Controls */}
-        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+        <div className="flex items-center justify-between sm:justify-end gap-5 shrink-0 pt-1 lg:pt-0">
           {/* Result Count */}
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-            {totalCount} {totalCount === 1 ? "product" : "products"}
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+            Showing <strong className="font-bold text-stone-900 dark:text-stone-100">{totalCount}</strong> {totalCount === 1 ? "object" : "curated objects"}
           </span>
 
           {/* Sort Selector */}
           <div className="flex items-center gap-2">
-            <label htmlFor="storefront-sort" className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-              Sort by:
-            </label>
-            <select
-              id="storefront-sort"
-              value={currentSort}
-              onChange={handleSortChange}
-              disabled={isPending}
-              className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-            >
-              <option value="featured">Featured</option>
-              <option value="newest">Newest</option>
-              <option value="a-z">A to Z</option>
-            </select>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-semibold whitespace-nowrap">
+              Sort:
+            </span>
+            <div className="relative">
+              <select
+                id="storefront-sort"
+                value={currentSort}
+                onChange={handleSortChange}
+                disabled={isPending}
+                className="appearance-none rounded-xl border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs font-semibold text-stone-800 shadow-xs transition-colors focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200"
+              >
+                <option value="featured">Curator Picks</option>
+                <option value="newest">Latest Additions</option>
+                <option value="a-z">Title (A–Z)</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-stone-400">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
       </div>

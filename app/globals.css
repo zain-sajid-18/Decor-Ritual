@@ -1,57 +1,172 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Dark mode via class (ThemeProvider adds .dark / .light to <html>)
+   ============================================================ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   Design Tokens — Radiant Warm Boutique (Light)
+   ============================================================ */
 :root {
-  /* Minimal, professional, product-focused neutral tokens */
-  --background: #ffffff;
-  --foreground: #09090b;
+  /* Crisp, warm, inviting canvas */
+  --background: #fdfdfc;
+  --background-alt: #f7f6f2;
   --surface: #ffffff;
-  --surface-muted: #f4f4f5;
-  --muted-text: #71717a;
-  --border: #e4e4e7;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
+  --surface-raised: #ffffff;
+
+  /* High-contrast crisp typography */
+  --foreground: #1c1917;
+  --foreground-muted: #57534e;
+  --foreground-subtle: #78716c;
+
+  /* Radiant warm amber & terracotta glow */
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --accent-foreground: #ffffff;
+  --accent-soft: #fef3c7;
+  --accent-soft-text: #92400e;
+
+  /* Crisp luxury borders */
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+
+  /* Primary Action */
+  --primary: #1c1917;
+  --primary-hover: #292524;
+  --primary-foreground: #ffffff;
+
+  /* Status Colors */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
+  --success: #10b981;
+  --success-foreground: #ffffff;
+
+  /* Radiant 3D Shadows */
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 16px 32px -4px rgb(0 0 0 / 0.1), 0 6px 12px -2px rgb(0 0 0 / 0.05);
+  --shadow-card: 0 2px 8px -1px rgb(0 0 0 / 0.06), 0 1px 4px -1px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 20px 35px -8px rgb(217 119 6 / 0.15), 0 8px 16px -4px rgb(0 0 0 / 0.06);
+
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --surface: #18181b;
-    --surface-muted: #27272a;
-    --muted-text: #a1a1aa;
-    --border: #27272a;
-    --primary: #fafafa;
-    --primary-foreground: #18181b;
-    --destructive: #f87171;
-    --destructive-foreground: #ffffff;
-  }
+/* ============================================================
+   Design Tokens — Radiant Warm Boutique (Dark)
+   ============================================================ */
+.dark {
+  /* Rich obsidian night with warm undertones */
+  --background: #0f0e0d;
+  --background-alt: #1a1816;
+  --surface: #171513;
+  --surface-raised: #221f1c;
+
+  /* Bright, readable text */
+  --foreground: #fafaf9;
+  --foreground-muted: #d6d3d1;
+  --foreground-subtle: #a8a29e;
+
+  /* Glowing honey gold */
+  --accent: #f59e0b;
+  --accent-hover: #fbbf24;
+  --accent-foreground: #0f0e0d;
+  --accent-soft: #38240f;
+  --accent-soft-text: #fcd34d;
+
+  /* Borders */
+  --border: #292524;
+  --border-strong: #44403c;
+
+  /* Primary Action */
+  --primary: #fafaf9;
+  --primary-hover: #f5f5f4;
+  --primary-foreground: #0f0e0d;
+
+  /* Status Colors */
+  --destructive: #f87171;
+  --destructive-foreground: #0f0e0d;
+  --success: #34d399;
+  --success-foreground: #0f0e0d;
+
+  /* Dark mode glow shadows */
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4);
+  --shadow-md: 0 6px 16px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 20px 36px -4px rgb(0 0 0 / 0.6);
+  --shadow-card: 0 2px 8px 0 rgb(0 0 0 / 0.4);
+  --shadow-card-hover: 0 20px 40px -6px rgb(245 158 11 / 0.12), 0 8px 16px 0 rgb(0 0 0 / 0.5);
 }
 
+/* ============================================================
+   Tailwind Theme Mapping
+   ============================================================ */
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background-alt: var(--background-alt);
   --color-surface: var(--surface);
-  --color-surface-muted: var(--surface-muted);
-  --color-muted-text: var(--muted-text);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-text: var(--accent-soft-text);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: "Newsreader", "Playfair Display", Georgia, serif;
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-editorial {
+  font-family: var(--font-serif);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth transitions */
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
