@@ -1,10 +1,10 @@
-# Decor Ritual 🛋️
+# ZF Store 🛋️
 
-> A premium home décor product discovery platform built with **Next.js, PostgreSQL, Drizzle ORM, and Cloudinary**, combining a curated storefront with a secure admin management system.
+> A premium product discovery platform built with **Next.js, PostgreSQL, Drizzle ORM, and Cloudinary**, combining a curated storefront with a secure admin management system.
 
 ## Overview
 
-**Decor Ritual** is a modern home décor e-commerce-style platform designed around **curated product discovery** rather than traditional checkout.
+**ZF Store** is a modern e-commerce-style platform designed around **curated product discovery** rather than traditional checkout.
 
 Visitors can explore products through a clean editorial-style storefront, browse categories, view detailed product information, and follow affiliate links to purchase products from external marketplaces such as Amazon.
 
@@ -72,7 +72,7 @@ The platform also includes a dedicated admin dashboard for managing products, ca
 The application is organized around two primary areas:
 
 ```text
-                    Decor Ritual
+                      ZF Store
                          │
             ┌────────────┴────────────┐
             │                         │
@@ -319,7 +319,7 @@ Production secrets and environment variables should be configured through the de
 
 ## 🎯 Project Goals
 
-Decor Ritual was designed around a few core principles:
+ZF Store was designed around a few core principles:
 
 * **Curated over clutter** — focus on useful product discovery rather than overwhelming catalogs.
 * **Minimal over excessive** — keep the interface clean and product-focused.

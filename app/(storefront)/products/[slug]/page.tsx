@@ -225,7 +225,21 @@ export default async function StorefrontProductDetailPage({
 
               {/* Amazon Affiliate Disclosure — required near every affiliate link */}
               <p className="text-[11px] leading-relaxed text-stone-500 dark:text-stone-400">
-                <strong className="text-stone-600 dark:text-stone-300">Affiliate disclosure:</strong> As an Amazon Associate, we earn from qualifying purchases. You will be redirected to Amazon.com to complete your purchase. Prices are subject to change — the price shown on Amazon at the time of your order is the final price.
+                <strong className="text-stone-700 dark:text-stone-300">Affiliate disclosure:</strong> As an Amazon Associate I earn from qualifying purchases. You will be redirected to Amazon.com to complete your purchase. Prices &amp; availability are subject to change. Read our{" "}
+                <Link
+                  href="/disclosure"
+                  className="underline underline-offset-2 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                >
+                  disclosure
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy-policy"
+                  className="underline underline-offset-2 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                >
+                  privacy policy
+                </Link>
+                .
               </p>
             </div>
 
