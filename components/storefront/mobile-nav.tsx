@@ -56,7 +56,7 @@ export function MobileNav() {
             aria-hidden="true"
           />
 
-          {/* Slide-down Menu (Admin link removed) */}
+          {/* Slide-down Menu */}
           <div className="fixed top-16 left-0 right-0 z-50 border-b border-stone-200 bg-[#fbfaf7]/95 backdrop-blur-lg px-6 py-6 shadow-xl dark:border-stone-800 dark:bg-[#121110]/95 animate-in slide-in-from-top-2 duration-200">
             <nav className="flex flex-col space-y-1.5">
               <Link
@@ -71,6 +71,21 @@ export function MobileNav() {
                 className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-stone-800 hover:bg-stone-200/50 dark:text-stone-200 dark:hover:bg-stone-800/60 transition-colors"
               >
                 <span>Collections</span>
+                <span className="text-xs text-stone-400">→</span>
+              </Link>
+              <div className="my-2 border-t border-stone-200/80 dark:border-stone-800/80" />
+              <Link
+                href="/disclosure"
+                className="flex items-center justify-between rounded-xl px-4 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:bg-stone-800/60 transition-colors"
+              >
+                <span>Affiliate Disclosure</span>
+                <span className="text-xs text-stone-400">→</span>
+              </Link>
+              <Link
+                href="/privacy-policy"
+                className="flex items-center justify-between rounded-xl px-4 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:bg-stone-800/60 transition-colors"
+              >
+                <span>Privacy Policy</span>
                 <span className="text-xs text-stone-400">→</span>
               </Link>
             </nav>

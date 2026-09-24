@@ -2,7 +2,7 @@
  * Supported Amazon Regional Domains & Hostnames
  *
  * Defines the strict list of authorized Amazon domain names supported
- * by the Decor Ritual outbound link architecture.
+ * by the ZF Store outbound link architecture.
  */
 
 export const SUPPORTED_AMAZON_DOMAINS = [

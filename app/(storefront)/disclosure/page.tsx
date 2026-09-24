@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Affiliate Disclosure | Decor Ritual",
+  title: "Affiliate Disclosure | ZF Store",
   description:
-    "Decor Ritual participates in the Amazon Services LLC Associates Program. Read our full affiliate disclosure and how we earn commissions.",
+    "ZF Store participates in the Amazon Services LLC Associates Program. Read our full affiliate disclosure and how we earn commissions from qualifying purchases.",
   alternates: {
     canonical: "/disclosure",
   },
@@ -16,7 +16,7 @@ export default function DisclosurePage() {
       {/* Page Header */}
       <div className="mb-10 space-y-3">
         <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400">
-          Legal & Transparency
+          Legal &amp; Transparency
         </span>
         <h1 className="text-3xl font-extrabold tracking-tight text-stone-900 dark:text-stone-50">
           Affiliate Disclosure
@@ -27,109 +27,112 @@ export default function DisclosurePage() {
       </div>
 
       <div className="space-y-8 text-sm leading-relaxed text-stone-600 dark:text-stone-300">
-        {/* Required FTC/Amazon Disclosure Statement */}
+
+        {/* Amazon's exact required disclosure — verbatim from AOPA Section 5 */}
         <section className="rounded-2xl border border-amber-200 bg-amber-50/60 dark:border-amber-800/40 dark:bg-amber-950/20 p-6 space-y-3">
           <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            Amazon Associates Program Disclosure
+            Amazon Associates Program Statement
           </h2>
+          <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+            &ldquo;As an Amazon Associate I earn from qualifying purchases.&rdquo;
+          </p>
           <p>
             <strong>
-              Decor Ritual is a participant in the Amazon Services LLC
-              Associates Program, an affiliate advertising program designed to
-              provide a means for sites to earn advertising fees by advertising
-              and linking to Amazon.com.
+              ZF Store is a participant in the Amazon Services LLC Associates Program, an affiliate
+              advertising program designed to provide a means for sites to earn advertising fees by
+              advertising and linking to Amazon.com.
             </strong>
           </p>
           <p>
-            As an Amazon Associate, we earn from qualifying purchases.{" "}
-            <strong>
-              This means that when you click a link on our site and make a
-              purchase on Amazon, we may receive a small commission at no
-              additional cost to you.
-            </strong>
+            This means that when you click links on our site that direct to Amazon.com and make a
+            qualifying purchase, we may receive a small commission from Amazon. This does{" "}
+            <strong>not</strong> increase the price you pay; the cost of any item remains identical
+            whether you use our referral link or go directly to Amazon.com.
           </p>
         </section>
 
         {/* How it works */}
         <section className="space-y-3">
           <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            How It Works
+            How ZF Store Works
           </h2>
           <p>
-            Decor Ritual is a curated product discovery platform. We research,
-            select, and present home décor and lifestyle products that meet our
-            editorial standards. We do <strong>not</strong> sell products
-            directly — all purchases are made through Amazon.com, which handles
-            payment, shipping, fulfillment, and customer service.
+            ZF Store is an independent product discovery catalog. We research, select, and
+            showcase products based on aesthetic quality, functionality, and design excellence. We
+            do <strong>not</strong> stock, sell, or ship items directly. All checkouts and orders
+            take place on Amazon.com, which provides customer fulfillment, customer service, and
+            returns under Amazon&apos;s standard policies.
           </p>
           <p>
-            Every &quot;View on Amazon&quot; or &quot;Purchase on Amazon&quot;
-            button on our site directs you to Amazon.com. If you click such a
-            link and make a purchase within Amazon&apos;s attribution window, we
-            may earn an affiliate commission.
+            Every product CTA button on our platform (such as &ldquo;View &amp; Purchase on
+            Amazon&rdquo;) directs you safely to Amazon.com with our official Associate tag attached.
           </p>
         </section>
 
-        {/* Price disclaimer */}
+        {/* Price disclaimer — required by Amazon AOPA */}
         <section className="space-y-3">
           <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            Pricing & Availability
+            Pricing &amp; Availability Disclaimer
           </h2>
           <p>
-            Product prices and availability are accurate at the time of initial
-            publication but{" "}
-            <strong>
-              are subject to change without notice. The price displayed on
-              Amazon at the time of purchase is the final price you pay.
-            </strong>{" "}
-            Always verify the current price on Amazon before completing your
-            order.
+            Product prices and availability are accurate as of the date/time indicated and are
+            subject to change without notice. Any price and availability information displayed on
+            Amazon.com at the time of purchase will apply to the purchase of this product.
+          </p>
+          <p>
+            ZF Store does not guarantee prices, discounts, coupons, or availability listed on our
+            pages. Always confirm the final price and details directly on Amazon.com prior to
+            completing any transaction.
           </p>
         </section>
 
         {/* Editorial independence */}
         <section className="space-y-3">
           <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            Editorial Independence
+            Editorial Integrity &amp; Independence
           </h2>
           <p>
-            Our product selections are made independently based on quality,
-            design, and editorial merit. We do not accept payment from brands or
-            manufacturers to feature products. Affiliate commissions do not
-            influence which products we curate or how we describe them.
+            Our catalog is curated independently. We do not accept paid reviews, sponsored rankings,
+            or placement fees from manufacturers to feature specific items. Our goal is to maintain
+            a clean, inspiring, and high-standard directory of products.
           </p>
         </section>
 
-        {/* FTC compliance note */}
-        <section className="space-y-3">
-          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            FTC Compliance
-          </h2>
-          <p>
-            This disclosure is made in accordance with the Federal Trade
-            Commission&apos;s{" "}
-            <strong>16 CFR Part 255: Guides Concerning the Use of Endorsements
-            and Testimonials in Advertising</strong>, and with Amazon&apos;s
-            Associates Program Operating Agreement.
-          </p>
-        </section>
-
-        {/* Contact */}
+        {/* Links to Privacy Policy & Amazon */}
         <section className="space-y-3 border-t border-stone-200 dark:border-stone-800 pt-8">
           <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            Questions?
+            Related Documents &amp; External Policies
           </h2>
-          <p>
-            If you have any questions about this disclosure or how we use
-            affiliate links, please visit our{" "}
-            <Link
-              href="/"
-              className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 underline underline-offset-2"
-            >
-              homepage
-            </Link>{" "}
-            or reach out through the contact information provided in the footer.
-          </p>
+          <ul className="space-y-2 text-xs">
+            <li>
+              <Link
+                href="/privacy-policy"
+                className="text-amber-700 hover:text-amber-800 dark:text-amber-400 underline underline-offset-2 font-medium"
+              >
+                ZF Store Privacy Policy &rarr;
+              </Link>
+            </li>
+            <li>
+              <a
+                href="https://affiliate-program.amazon.com/help/operating/agreement"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="text-amber-700 hover:text-amber-800 dark:text-amber-400 underline underline-offset-2"
+              >
+                Amazon Associates Program Operating Agreement &rarr;
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.amazon.com/gp/help/customer/display.html?nodeId=GX7NJQ4ZB8MHFRNJ"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="text-amber-700 hover:text-amber-800 dark:text-amber-400 underline underline-offset-2"
+              >
+                Amazon.com Conditions of Use &amp; Privacy Notice &rarr;
+              </a>
+            </li>
+          </ul>
         </section>
       </div>
     </div>
