@@ -24,7 +24,7 @@ export default async function AdminProductsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Product Catalog"
-        description={`${products.length} total records — all statuses visible to admin.`}
+        description="Manage your store catalog and product listings."
         action={
           <Link
             href="/admin/products/new"

@@ -81,19 +81,23 @@ export async function getUploadSignatureAction(
     };
   }
 
-  // Verify product exists before signing
-  const product = await adminGetProductById(productId);
-  if (!product) {
-    return { success: false, message: "Product not found." };
-  }
+  const isNewProduct = productId.startsWith("new-") || productId.startsWith("draft-");
 
-  // Enforce max images per product
-  const existingImages = await adminGetProductImages(productId);
-  if (existingImages.length >= MAX_IMAGES_PER_PRODUCT) {
-    return {
-      success: false,
-      message: `Products can have a maximum of ${MAX_IMAGES_PER_PRODUCT} images.`,
-    };
+  if (!isNewProduct) {
+    // Verify product exists before signing
+    const product = await adminGetProductById(productId);
+    if (!product) {
+      return { success: false, message: "Product not found." };
+    }
+
+    // Enforce max images per product
+    const existingImages = await adminGetProductImages(productId);
+    if (existingImages.length >= MAX_IMAGES_PER_PRODUCT) {
+      return {
+        success: false,
+        message: `Products can have a maximum of ${MAX_IMAGES_PER_PRODUCT} images.`,
+      };
+    }
   }
 
   try {

@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       <PageHeader
         title="Dashboard Overview"
-        description="Monitor catalog composition, publishing states, and system integration status."
+        description="Welcome! Here you can manage your products, categories, and track your store at a glance."
         action={
           <div className="flex items-center gap-2">
             <Link
@@ -51,20 +51,20 @@ export default async function AdminDashboardPage() {
         <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              Total Catalog Items
+              Total Products
             </span>
             <Link
               href="/admin/products"
               className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 underline"
             >
-              View list →
+              View all →
             </Link>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
               {products.length}
             </span>
-            <span className="text-xs text-zinc-500">records</span>
+            <span className="text-xs text-zinc-500">products</span>
           </div>
           <div className="mt-4 flex items-center gap-2 text-xs">
             <Badge variant="success">{publishedCount} Published</Badge>
@@ -77,7 +77,7 @@ export default async function AdminDashboardPage() {
         <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              Taxonomy Categories
+              Categories
             </span>
             <Link
               href="/admin/categories"
@@ -102,21 +102,31 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Data Architecture State */}
+        {/* Live Store Preview */}
         <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              Data Architecture
+              Live Store
             </span>
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="h-2 w-2 rounded-full bg-emerald-500" title="Store is live" />
           </div>
           <div className="mt-3">
             <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              Layered DAL + Drizzle
+              Your Store is Live
             </span>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Null-safe repository with PostgreSQL schema support and offline fixture fallback.
+              View your storefront as customers see it.
             </p>
+          </div>
+          <div className="mt-4">
+            <Link
+              href="/"
+              target="_blank"
+              rel="noopener"
+              className="text-xs font-medium text-zinc-700 dark:text-zinc-300 underline hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              Open Storefront →
+            </Link>
           </div>
         </div>
       </div>
@@ -124,36 +134,33 @@ export default async function AdminDashboardPage() {
       {/* Product Publishing Workflow Guide */}
       <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-          Publishing Lifecycle Workflow
+          How Product Status Works
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
           <div className="p-3.5 rounded border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40 space-y-1.5">
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">1. Draft</Badge>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200">Catalog Ingestion</span>
+              <Badge variant="secondary">Draft</Badge>
             </div>
             <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              New products enter as drafts. They are completely hidden from public search and category indexes.
+              Hidden from visitors. Use this while you are still adding details or photos.
             </p>
           </div>
 
           <div className="p-3.5 rounded border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40 space-y-1.5">
             <div className="flex items-center gap-2">
-              <Badge variant="success">2. Published</Badge>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200">Storefront Active</span>
+              <Badge variant="success">Published</Badge>
             </div>
             <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Published products are indexed by the public DAL and rendered on storefront search and categories.
+              Visible to all customers on the store. The product appears in search and category pages.
             </p>
           </div>
 
           <div className="p-3.5 rounded border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40 space-y-1.5">
             <div className="flex items-center gap-2">
-              <Badge variant="outline">3. Archived</Badge>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200">Retired Products</span>
+              <Badge variant="outline">Archived</Badge>
             </div>
             <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Discontinued or unavailable items can be archived while preserving historical relational integrity.
+              Hidden from the store but safely kept in your records. Useful for seasonal or discontinued items.
             </p>
           </div>
         </div>
@@ -166,10 +173,10 @@ export default async function AdminDashboardPage() {
           className="group rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
         >
           <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">
-            Manage Products Table →
+            Manage Products →
           </h3>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Browse all catalog items, filter by status, inspect Amazon links, or trigger edits.
+            Add, edit, and publish products. Control which items appear on the store.
           </p>
         </Link>
 
@@ -178,10 +185,10 @@ export default async function AdminDashboardPage() {
           className="group rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
         >
           <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">
-            Manage Categories Table →
+            Manage Categories →
           </h3>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Organize taxonomy, manage display order, and configure SEO fields for room & product groupings.
+            Create and organise the categories shown in the store&apos;s top menu.
           </p>
         </Link>
       </div>

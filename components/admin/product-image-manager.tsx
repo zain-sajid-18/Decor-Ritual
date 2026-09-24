@@ -30,6 +30,8 @@ interface UploadingFile {
 interface ProductImageManagerProps {
   productId: string;
   initialImages: ProductImage[];
+  isNewProduct?: boolean;
+  onImagesChange?: (images: ProductImage[]) => void;
 }
 
 // ─── Upload helper ────────────────────────────────────────────────────────
@@ -105,6 +107,8 @@ async function uploadToCloudinary(
 export function ProductImageManager({
   productId,
   initialImages,
+  isNewProduct = false,
+  onImagesChange,
 }: ProductImageManagerProps) {
   const [images, setImages] = useState<ProductImage[]>(initialImages);
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
@@ -181,22 +185,39 @@ export function ProductImageManager({
         updateProgress
       );
 
-      // 3. Save metadata to our database
-      const nextSortOrder = images.length;
-      const saveResult = await saveProductImageAction(productId, {
-        url: secureUrl,
-        cloudinaryPublicId: publicId,
-        alt: file.name.replace(/\.[^/.]+$/, ""), // strip extension as default alt
-        sortOrder: nextSortOrder,
-      });
+      // 3. Save metadata
+      if (!isNewProduct) {
+        // Persist directly to DB when editing an existing product
+        const nextSortOrder = images.length;
+        const saveResult = await saveProductImageAction(productId, {
+          url: secureUrl,
+          cloudinaryPublicId: publicId,
+          alt: file.name.replace(/\.[^/.]+$/, ""), // strip extension as default alt
+          sortOrder: nextSortOrder,
+        });
 
-      if (!saveResult.success || !saveResult.image) {
-        setUploadError(saveResult.message ?? "Upload succeeded but failed to save image.");
-        return;
+        if (!saveResult.success || !saveResult.image) {
+          setUploadError(saveResult.message ?? "Upload succeeded but failed to save image.");
+          return;
+        }
+
+        setImages((prev) => [...prev, saveResult.image!]);
+        onImagesChange?.([...images, saveResult.image!]);
+      } else {
+        // In creation mode, collect images to be saved with the product
+        const newImg: ProductImage = {
+          id: `new-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          url: secureUrl,
+          cloudinaryPublicId: publicId,
+          alt: file.name.replace(/\.[^/.]+$/, ""),
+          sortOrder: images.length,
+        };
+
+        const nextImages = [...images, newImg];
+        setImages(nextImages);
+        onImagesChange?.(nextImages);
       }
 
-      // 4. Add to local image list
-      setImages((prev) => [...prev, saveResult.image!]);
       setUploading((prev) => prev.filter((u) => u.id !== uploadId));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Upload failed.";
@@ -238,7 +259,7 @@ export function ProductImageManager({
         await uploadSingleFile(file);
       }
     },
-    [images.length, uploading.length] // eslint-disable-line react-hooks/exhaustive-deps
+    [images.length, uploading.length, productId, isNewProduct] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   // ── Drag-and-drop ──────────────────────────────────────────────────────
@@ -260,12 +281,24 @@ export function ProductImageManager({
   };
 
   const saveAlt = (imageId: string) => {
+    if (isNewProduct) {
+      setImages((prev) => {
+        const next = prev.map((img) => (img.id === imageId ? { ...img, alt: altDraft } : img));
+        onImagesChange?.(next);
+        return next;
+      });
+      setEditingAltId(null);
+      return;
+    }
+
     startSavingAlt(async () => {
       const result = await updateProductImageAltAction(imageId, productId, altDraft);
       if (result.success) {
-        setImages((prev) =>
-          prev.map((img) => (img.id === imageId ? { ...img, alt: altDraft } : img))
-        );
+        setImages((prev) => {
+          const next = prev.map((img) => (img.id === imageId ? { ...img, alt: altDraft } : img));
+          onImagesChange?.(next);
+          return next;
+        });
         setEditingAltId(null);
       } else {
         showError(result.message ?? "Failed to update alt text.");
@@ -282,28 +315,47 @@ export function ProductImageManager({
 
     [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
 
-    setImages(newImages);
+    const ordered = newImages.map((img, idx) => ({ ...img, sortOrder: idx }));
+    setImages(ordered);
+    onImagesChange?.(ordered);
 
-    startReordering(async () => {
-      const result = await reorderProductImagesAction(
-        productId,
-        newImages.map((img) => img.id)
-      );
-      if (!result.success) {
-        // Revert on failure
-        setImages(images);
-        showError(result.message ?? "Failed to update image order.");
-      }
-    });
+    if (!isNewProduct) {
+      startReordering(async () => {
+        const result = await reorderProductImagesAction(
+          productId,
+          ordered.map((img) => img.id)
+        );
+        if (!result.success) {
+          // Revert on failure
+          setImages(images);
+          onImagesChange?.(images);
+          showError(result.message ?? "Failed to update image order.");
+        }
+      });
+    }
   };
 
   // ── Delete ─────────────────────────────────────────────────────────────
 
   const handleDelete = (imageId: string) => {
+    if (isNewProduct) {
+      setImages((prev) => {
+        const next = prev.filter((img) => img.id !== imageId);
+        onImagesChange?.(next);
+        return next;
+      });
+      showSuccess("Image removed.");
+      return;
+    }
+
     startDeleting(async () => {
       const result = await deleteProductImageAction(imageId, productId);
       if (result.success) {
-        setImages((prev) => prev.filter((img) => img.id !== imageId));
+        setImages((prev) => {
+          const next = prev.filter((img) => img.id !== imageId);
+          onImagesChange?.(next);
+          return next;
+        });
         showSuccess(result.message ?? "Image deleted.");
       } else {
         showError(result.message ?? "Failed to delete image.");

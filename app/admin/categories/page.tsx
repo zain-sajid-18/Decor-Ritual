@@ -17,7 +17,7 @@ export default async function AdminCategoriesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Categories"
-        description="Manage the product categories. Products belong to exactly one category."
+        description="Organise your products into categories for easy browsing."
         action={
           <Link
             href="/admin/categories/new"
@@ -57,7 +57,7 @@ export default async function AdminCategoriesPage() {
                     Status
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hidden md:table-cell">
-                    Sort Order
+                    Menu Order
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Actions

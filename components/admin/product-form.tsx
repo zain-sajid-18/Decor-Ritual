@@ -8,7 +8,7 @@ import {
   deleteProductAction,
 } from "@/lib/actions/admin/products";
 import { INITIAL_ACTION_STATE } from "@/types/action";
-import type { Product } from "@/types/product";
+import type { Product, ProductImage } from "@/types/product";
 import type { Category } from "@/types/category";
 import { ProductImageManager } from "@/components/admin/product-image-manager";
 
@@ -27,6 +27,29 @@ export function ProductForm({ product, categories }: ProductFormProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
+
+  // Client-friendly auto-slug & image upload states
+  const [slug, setSlug] = useState(product?.slug ?? "");
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(Boolean(product?.slug));
+  const [tempId] = useState(() => "new-" + Math.random().toString(36).substring(2, 9));
+  const [pendingImages, setPendingImages] = useState<ProductImage[]>(product?.images ?? []);
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (!isSlugManuallyEdited) {
+      const generated = val
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      setSlug(generated);
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSlugManuallyEdited(true);
+    setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+  };
 
   const handleDelete = () => {
     if (!product) return;
@@ -85,10 +108,13 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         className="space-y-8 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
         aria-label={isEditing ? "Edit product form" : "Create product form"}
       >
-        {/* Core Product Information */}
+        {/* Hidden field to submit pending images for new products */}
+        <input type="hidden" name="images" value={JSON.stringify(pendingImages)} />
+
+        {/* 1. Basic Details */}
         <fieldset className="space-y-5">
           <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
-            Core Product Information
+            1. Product Information
           </legend>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -102,6 +128,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 type="text"
                 required
                 defaultValue={product?.title ?? ""}
+                onChange={handleTitleChange}
                 placeholder="e.g. Modern Minimalist Desk Lamp"
                 className={`flex h-9 w-full rounded-md border px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                   state.errors?.title
@@ -116,14 +143,15 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
             <div className="space-y-1.5">
               <label htmlFor="slug" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                Slug <span className="text-red-500" aria-label="required">*</span>
+                Web Address / Slug <span className="text-red-500" aria-label="required">*</span>
               </label>
               <input
                 id="slug"
                 name="slug"
                 type="text"
                 required
-                defaultValue={product?.slug ?? ""}
+                value={slug}
+                onChange={handleSlugChange}
                 placeholder="e.g. modern-minimalist-desk-lamp"
                 className={`flex h-9 w-full rounded-md border px-3 py-1 text-sm font-mono text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                   state.errors?.slug
@@ -135,56 +163,58 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 <p className="text-xs text-red-500 font-medium">{state.errors.slug[0]}</p>
               ) : (
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Lowercase, hyphen-separated. Unique per catalog.
+                  Auto-generated from title. Creates the link: /products/<strong>{slug || "your-slug"}</strong>
                 </p>
               )}
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="brand" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Brand <span className="text-zinc-400 font-normal">(Optional)</span>
-            </label>
-            <input
-              id="brand"
-              name="brand"
-              type="text"
-              defaultValue={product?.brand ?? ""}
-              placeholder="e.g. Lumina Studio"
-              className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label htmlFor="categoryId" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Category <span className="text-red-500" aria-label="required">*</span>
+              </label>
+              <select
+                id="categoryId"
+                name="categoryId"
+                required
+                defaultValue={product?.categoryId ?? ""}
+                className={`flex h-9 w-full appearance-none rounded-md border px-3 py-1 text-sm text-zinc-900 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
+                  state.errors?.categoryId
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-zinc-300 focus:ring-zinc-900 dark:border-zinc-700"
+                }`}
+              >
+                <option value="">Select a category…</option>
+                {categories.map((cat) => (
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    disabled={!cat.isActive && cat.id !== product?.categoryId}
+                  >
+                    {cat.name}
+                    {!cat.isActive ? " (Inactive)" : ""}
+                  </option>
+                ))}
+              </select>
+              {state.errors?.categoryId && (
+                <p className="text-xs text-red-500 font-medium">{state.errors.categoryId[0]}</p>
+              )}
+            </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="categoryId" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Category <span className="text-red-500" aria-label="required">*</span>
-            </label>
-            <select
-              id="categoryId"
-              name="categoryId"
-              required
-              defaultValue={product?.categoryId ?? ""}
-              className={`flex h-9 w-full appearance-none rounded-md border px-3 py-1 text-sm text-zinc-900 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
-                state.errors?.categoryId
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-zinc-300 focus:ring-zinc-900 dark:border-zinc-700"
-              }`}
-            >
-              <option value="">Select a category…</option>
-              {categories.map((cat) => (
-                <option
-                  key={cat.id}
-                  value={cat.id}
-                  disabled={!cat.isActive && cat.id !== product?.categoryId}
-                >
-                  {cat.name}
-                  {!cat.isActive ? " (Inactive)" : ""}
-                </option>
-              ))}
-            </select>
-            {state.errors?.categoryId && (
-              <p className="text-xs text-red-500 font-medium">{state.errors.categoryId[0]}</p>
-            )}
+            <div className="space-y-1.5">
+              <label htmlFor="brand" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Brand <span className="text-zinc-400 font-normal">(Optional)</span>
+              </label>
+              <input
+                id="brand"
+                name="brand"
+                type="text"
+                defaultValue={product?.brand ?? ""}
+                placeholder="e.g. Lumina Studio"
+                className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -197,7 +227,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               rows={2}
               required
               defaultValue={product?.shortDescription ?? ""}
-              placeholder="Concise product summary shown in grids and cards."
+              placeholder="A short summary of the product shown on product cards."
               className={`flex w-full rounded-md border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                 state.errors?.shortDescription
                   ? "border-red-500 focus:ring-red-500"
@@ -211,7 +241,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
           <div className="space-y-1.5">
             <label htmlFor="description" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Full Description <span className="text-red-500" aria-label="required">*</span>
+              Detailed Description <span className="text-red-500" aria-label="required">*</span>
             </label>
             <textarea
               id="description"
@@ -219,7 +249,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               rows={5}
               required
               defaultValue={product?.description ?? ""}
-              placeholder="Detailed product description for the product detail page."
+              placeholder="Comprehensive details, features, and specs shown on the product page."
               className={`flex w-full rounded-md border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                 state.errors?.description
                   ? "border-red-500 focus:ring-red-500"
@@ -233,23 +263,23 @@ export function ProductForm({ product, categories }: ProductFormProps) {
 
           <div className="space-y-1.5">
             <label htmlFor="tags" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Tags <span className="text-zinc-400 font-normal">(comma-separated)</span>
+              Tags <span className="text-zinc-400 font-normal">(Optional, comma-separated)</span>
             </label>
             <input
               id="tags"
               name="tags"
               type="text"
               defaultValue={product?.tags ? product.tags.join(", ") : ""}
-              placeholder="e.g. minimalist, modern, studio-quality"
+              placeholder="e.g. lighting, minimalist, bedroom"
               className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             />
           </div>
         </fieldset>
 
-        {/* Amazon Affiliate Configuration */}
+        {/* 2. Amazon Product Link */}
         <fieldset className="space-y-5">
           <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
-            Amazon Affiliate Configuration
+            2. Amazon Destination Link
           </legend>
 
           <div className="space-y-1.5">
@@ -273,14 +303,14 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               <p className="text-xs text-red-500 font-medium">{state.errors.amazonUrl[0]}</p>
             ) : (
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Must be a valid Amazon product URL.
+                Paste any regular Amazon product link. Affiliate tracking is automatically managed.
               </p>
             )}
           </div>
 
           <div className="space-y-1.5">
             <label htmlFor="asin" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              ASIN <span className="text-zinc-400 font-normal">(Optional)</span>
+              Amazon Product ID (ASIN) <span className="text-zinc-400 font-normal">(Optional)</span>
             </label>
             <input
               id="asin"
@@ -288,7 +318,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               type="text"
               maxLength={10}
               defaultValue={product?.asin ?? ""}
-              placeholder="e.g. B0XXXXXXXX"
+              placeholder="e.g. B08N5WRWNW"
               className={`flex h-9 w-full rounded-md border px-3 py-1 text-sm font-mono uppercase text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                 state.errors?.asin
                   ? "border-red-500 focus:ring-red-500"
@@ -301,32 +331,49 @@ export function ProductForm({ product, categories }: ProductFormProps) {
           </div>
         </fieldset>
 
-        {/* Publishing & Editorial Flags */}
+        {/* 3. Product Photos */}
         <fieldset className="space-y-4">
           <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
-            Publishing & Editorial Flags
+            3. Product Photos
+          </legend>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Upload product photos directly. The first photo will be used as the primary cover picture on your storefront.
+          </p>
+
+          <ProductImageManager
+            productId={isEditing && product ? product.id : tempId}
+            initialImages={isEditing && product ? product.images : []}
+            isNewProduct={!isEditing}
+            onImagesChange={setPendingImages}
+          />
+        </fieldset>
+
+        {/* 4. Visibility & Placement */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
+            4. Storefront Visibility
           </legend>
 
           <div className="space-y-1.5">
             <label htmlFor="status" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              Publication Status
+              Publishing Status
             </label>
             <select
               id="status"
               name="status"
-              defaultValue={product?.status ?? "draft"}
+              defaultValue={product?.status ?? "published"}
               className="flex h-9 w-48 appearance-none rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
+              <option value="published">Published (Visible)</option>
+              <option value="draft">Draft (Hidden)</option>
+              <option value="archived">Archived (Retired)</option>
             </select>
             {state.errors?.status && (
               <p className="text-xs text-red-500 font-medium">{state.errors.status[0]}</p>
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-5 pt-1">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -336,8 +383,8 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-600"
               />
               <div>
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Featured</span>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Shown in homepage featured section</p>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Featured Item</span>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Highlighted on the top of the homepage</p>
               </div>
             </label>
 
@@ -350,92 +397,58 @@ export function ProductForm({ product, categories }: ProductFormProps) {
                 className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-600"
               />
               <div>
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Recommended</span>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">Highlighted in recommended section</p>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Recommended Badge</span>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Shows an editor recommended badge</p>
               </div>
             </label>
           </div>
         </fieldset>
 
-        {/* SEO Overrides */}
-        <fieldset className="space-y-5">
-          <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
-            SEO Metadata <span className="text-zinc-400 font-normal text-xs">(Optional overrides)</span>
-          </legend>
+        {/* 5. Optional SEO Overrides (Collapsible for Clean Look) */}
+        <details className="group rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 p-4">
+          <summary className="cursor-pointer text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center justify-between select-none">
+            <span>5. Search Engine Settings (Optional SEO)</span>
+            <span className="text-[11px] text-zinc-400 font-normal group-open:hidden">Click to expand</span>
+          </summary>
 
-          <div className="space-y-1.5">
-            <label htmlFor="seoTitle" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              SEO Title
-            </label>
-            <input
-              id="seoTitle"
-              name="seoTitle"
-              type="text"
-              maxLength={70}
-              defaultValue={product?.seo?.title ?? ""}
-              placeholder="Defaults to product title if left blank"
-              className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-            {state.errors?.seoTitle && (
-              <p className="text-xs text-red-500 font-medium">{state.errors.seoTitle[0]}</p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="seoDescription" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              SEO Description
-            </label>
-            <textarea
-              id="seoDescription"
-              name="seoDescription"
-              rows={2}
-              maxLength={160}
-              defaultValue={product?.seo?.description ?? ""}
-              placeholder="Defaults to short description if left blank"
-              className="flex w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-            {state.errors?.seoDescription && (
-              <p className="text-xs text-red-500 font-medium">{state.errors.seoDescription[0]}</p>
-            )}
-          </div>
-        </fieldset>
-
-        {/* Product Images */}
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
-            Product Images
-          </legend>
-
-          {isEditing && product ? (
-            <ProductImageManager
-              productId={product.id}
-              initialImages={product.images}
-            />
-          ) : (
-            <div className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-              <svg
-                className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div>
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Images can be added after saving
-                </p>
-                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                  Create the product first, then open it to upload and manage product images.
-                </p>
-              </div>
+          <div className="mt-4 space-y-4 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="space-y-1.5">
+              <label htmlFor="seoTitle" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Custom Google Page Title
+              </label>
+              <input
+                id="seoTitle"
+                name="seoTitle"
+                type="text"
+                maxLength={70}
+                defaultValue={product?.seo?.title ?? ""}
+                placeholder="Leave blank to use the product title automatically"
+                className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+              {state.errors?.seoTitle && (
+                <p className="text-xs text-red-500 font-medium">{state.errors.seoTitle[0]}</p>
+              )}
             </div>
-          )}
-        </fieldset>
+
+            <div className="space-y-1.5">
+              <label htmlFor="seoDescription" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Custom Google Description
+              </label>
+              <textarea
+                id="seoDescription"
+                name="seoDescription"
+                rows={2}
+                maxLength={160}
+                defaultValue={product?.seo?.description ?? ""}
+                placeholder="Leave blank to use the short description automatically"
+                className="flex w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+              {state.errors?.seoDescription && (
+                <p className="text-xs text-red-500 font-medium">{state.errors.seoDescription[0]}</p>
+              )}
+            </div>
+          </div>
+        </details>
 
         {/* Audit Info in Edit Mode */}
         {product && (
@@ -458,7 +471,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
           <button
             type="submit"
             disabled={isPending || isDeleting}
-            className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+            className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
           >
             {isPending
               ? isEditing
@@ -476,7 +489,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
               rel="noopener"
               className="text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
-              Preview →
+              Preview on Store →
             </Link>
           )}
 
@@ -513,7 +526,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Are you sure you want to delete{" "}
               <strong className="text-zinc-900 dark:text-zinc-100">{product?.title}</strong>?
-              This will permanently delete the product and its associated images. This action cannot be undone.
+              This will permanently delete the product and its uploaded images. This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3 pt-2">
               <button

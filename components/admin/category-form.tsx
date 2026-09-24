@@ -25,6 +25,27 @@ export function CategoryForm({ category }: CategoryFormProps) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
 
+  // Auto-slug state
+  const [slug, setSlug] = useState(category?.slug ?? "");
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(Boolean(category?.slug));
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (!isSlugManuallyEdited) {
+      const generated = val
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      setSlug(generated);
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSlugManuallyEdited(true);
+    setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+  };
+
   const handleDelete = () => {
     if (!category) return;
     setDeleteError(null);
@@ -79,7 +100,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
 
       <form
         action={formAction}
-        className="space-y-8 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+        className="space-y-6 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
         aria-label={isEditing ? "Edit category form" : "Create category form"}
       >
         <fieldset className="space-y-5">
@@ -98,7 +119,8 @@ export function CategoryForm({ category }: CategoryFormProps) {
                 type="text"
                 required
                 defaultValue={category?.name ?? ""}
-                placeholder="e.g. Living Room"
+                onChange={handleNameChange}
+                placeholder="e.g. Living Room Decor"
                 className={`flex h-9 w-full rounded-md border px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                   state.errors?.name
                     ? "border-red-500 focus:ring-red-500"
@@ -112,15 +134,16 @@ export function CategoryForm({ category }: CategoryFormProps) {
 
             <div className="space-y-1.5">
               <label htmlFor="slug" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                Slug <span className="text-red-500" aria-label="required">*</span>
+                Web Address / Slug <span className="text-red-500" aria-label="required">*</span>
               </label>
               <input
                 id="slug"
                 name="slug"
                 type="text"
                 required
-                defaultValue={category?.slug ?? ""}
-                placeholder="e.g. living-room"
+                value={slug}
+                onChange={handleSlugChange}
+                placeholder="e.g. living-room-decor"
                 className={`flex h-9 w-full rounded-md border px-3 py-1 text-sm font-mono text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                   state.errors?.slug
                     ? "border-red-500 focus:ring-red-500"
@@ -131,7 +154,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
                 <p className="text-xs text-red-500 font-medium">{state.errors.slug[0]}</p>
               ) : (
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Unique, lowercase, hyphen-separated.
+                  Auto-generated from name. Creates link: /categories/<strong>{slug || "category-slug"}</strong>
                 </p>
               )}
             </div>
@@ -146,7 +169,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
               name="description"
               rows={3}
               defaultValue={category?.description ?? ""}
-              placeholder="Brief description of this category shown to customers."
+              placeholder="Brief description of products in this category."
               className={`flex w-full rounded-md border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                 state.errors?.description
                   ? "border-red-500 focus:ring-red-500"
@@ -161,7 +184,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-1.5">
               <label htmlFor="sortOrder" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                Sort Order <span className="text-zinc-400 font-normal">(Optional)</span>
+                Menu Display Priority <span className="text-zinc-400 font-normal">(Optional)</span>
               </label>
               <input
                 id="sortOrder"
@@ -177,20 +200,20 @@ export function CategoryForm({ category }: CategoryFormProps) {
                 }`}
               />
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Lower number appears first. Leave blank for auto-ordering.
+                Order in the top menu (e.g. 1 appears first). Default is 0.
               </p>
             </div>
 
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-1.5">
               <label htmlFor="imageUrl" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                Image URL <span className="text-zinc-400 font-normal">(Optional)</span>
+                Cover Image URL <span className="text-zinc-400 font-normal">(Optional)</span>
               </label>
               <input
                 id="imageUrl"
                 name="imageUrl"
                 type="url"
                 defaultValue={category?.image ?? ""}
-                placeholder="https://example.com/image.jpg"
+                placeholder="https://example.com/cover.jpg"
                 className={`flex h-9 w-full rounded-md border px-3 py-1 text-sm font-mono text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 dark:bg-zinc-900 dark:text-zinc-100 ${
                   state.errors?.imageUrl
                     ? "border-red-500 focus:ring-red-500"
@@ -203,7 +226,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
             </div>
           </div>
 
-          <div>
+          <div className="pt-1">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -213,57 +236,60 @@ export function CategoryForm({ category }: CategoryFormProps) {
                 className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-600"
               />
               <div>
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Active</span>
+                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Active Category</span>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Inactive categories are hidden from the public storefront.
+                  Visible to store visitors. Uncheck to hide this category from the public menu.
                 </p>
               </div>
             </label>
           </div>
         </fieldset>
 
-        {/* SEO Overrides */}
-        <fieldset className="space-y-5">
-          <legend className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800 w-full">
-            SEO Metadata <span className="text-zinc-400 font-normal text-xs">(Optional overrides)</span>
-          </legend>
+        {/* Collapsible Search Engine Settings */}
+        <details className="group rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 p-4">
+          <summary className="cursor-pointer text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center justify-between select-none">
+            <span>Search Engine Settings (Optional SEO)</span>
+            <span className="text-[11px] text-zinc-400 font-normal group-open:hidden">Click to expand</span>
+          </summary>
 
-          <div className="space-y-1.5">
-            <label htmlFor="seoTitle" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              SEO Title
-            </label>
-            <input
-              id="seoTitle"
-              name="seoTitle"
-              type="text"
-              maxLength={70}
-              defaultValue={category?.seo?.title ?? ""}
-              placeholder="Defaults to category name if left blank"
-              className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-            {state.errors?.seoTitle && (
-              <p className="text-xs text-red-500 font-medium">{state.errors.seoTitle[0]}</p>
-            )}
-          </div>
+          <div className="mt-4 space-y-4 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="space-y-1.5">
+              <label htmlFor="seoTitle" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Custom Google Page Title
+              </label>
+              <input
+                id="seoTitle"
+                name="seoTitle"
+                type="text"
+                maxLength={70}
+                defaultValue={category?.seo?.title ?? ""}
+                placeholder="Leave blank to use the category name automatically"
+                className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+              {state.errors?.seoTitle && (
+                <p className="text-xs text-red-500 font-medium">{state.errors.seoTitle[0]}</p>
+              )}
+            </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="seoDescription" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-              SEO Description
-            </label>
-            <textarea
-              id="seoDescription"
-              name="seoDescription"
-              rows={2}
-              maxLength={160}
-              defaultValue={category?.seo?.description ?? ""}
-              placeholder="Defaults to description if left blank"
-              className="flex w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-            {state.errors?.seoDescription && (
-              <p className="text-xs text-red-500 font-medium">{state.errors.seoDescription[0]}</p>
-            )}
+            <div className="space-y-1.5">
+              <label htmlFor="seoDescription" className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                Custom Google Description
+              </label>
+              <textarea
+                id="seoDescription"
+                name="seoDescription"
+                rows={2}
+                maxLength={160}
+                defaultValue={category?.seo?.description ?? ""}
+                placeholder="Leave blank to use the description automatically"
+                className="flex w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+              {state.errors?.seoDescription && (
+                <p className="text-xs text-red-500 font-medium">{state.errors.seoDescription[0]}</p>
+              )}
+            </div>
           </div>
-        </fieldset>
+        </details>
 
         {/* Audit Info in Edit Mode */}
         {category && (
@@ -286,7 +312,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
           <button
             type="submit"
             disabled={isPending || isDeleting}
-            className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+            className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
           >
             {isPending
               ? isEditing
@@ -304,7 +330,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
               rel="noopener"
               className="text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
-              Preview →
+              Preview on Store →
             </Link>
           )}
 
@@ -341,7 +367,7 @@ export function CategoryForm({ category }: CategoryFormProps) {
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Are you sure you want to delete{" "}
               <strong className="text-zinc-900 dark:text-zinc-100">{category?.name}</strong>?
-              If products are assigned to this category, deletion will be blocked to maintain data integrity.
+              If products are currently assigned to this category, deletion will be safely blocked until those products are moved.
             </p>
             <div className="flex justify-end gap-3 pt-2">
               <button
