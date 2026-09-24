@@ -109,6 +109,30 @@ const ProductFormSchema = z.object({
     .max(160, "SEO description must be 160 characters or fewer.")
     .optional()
     .transform((val) => (val && val.length > 0 ? val : undefined)),
+  images: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (!val) return [];
+      try {
+        const parsed = JSON.parse(val);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((img, idx) => ({
+              url: String(img.url || ""),
+              cloudinaryPublicId: img.cloudinaryPublicId
+                ? String(img.cloudinaryPublicId)
+                : undefined,
+              alt: String(img.alt || ""),
+              sortOrder: typeof img.sortOrder === "number" ? img.sortOrder : idx,
+            }))
+            .filter((img) => Boolean(img.url));
+        }
+      } catch {
+        return [];
+      }
+      return [];
+    }),
 });
 
 /**
@@ -123,6 +147,7 @@ function parseProductFormData(formData: FormData) {
     shortDescription: formData.get("shortDescription"),
     description: formData.get("description"),
     tags: formData.get("tags") || "",
+    images: formData.get("images") || undefined,
     amazonUrl: formData.get("amazonUrl"),
     asin: formData.get("asin") || undefined,
     status: formData.get("status") || "draft",
@@ -184,6 +209,7 @@ export async function createProductAction(
       shortDescription: data.shortDescription,
       description: data.description,
       tags: data.tags,
+      images: data.images && data.images.length > 0 ? data.images : undefined,
       amazonUrl: data.amazonUrl,
       asin: data.asin,
       status: data.status,
