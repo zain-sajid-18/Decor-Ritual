@@ -59,13 +59,15 @@ const ProductFormSchema = z.object({
     .trim()
     .min(1, "Please select a category."),
   shortDescription: z
-    .string({ message: "Short description is required." })
+    .string()
     .trim()
-    .min(1, "Short description cannot be empty."),
+    .optional()
+    .default(""),
   description: z
-    .string({ message: "Full description is required." })
+    .string()
     .trim()
-    .min(1, "Full description cannot be empty."),
+    .optional()
+    .default(""),
   tags: z
     .string()
     .optional()
@@ -153,8 +155,8 @@ function parseProductFormData(formData: FormData) {
     slug: formData.get("slug"),
     brand: formData.get("brand") || undefined,
     categoryId: formData.get("categoryId"),
-    shortDescription: formData.get("shortDescription"),
-    description: formData.get("description"),
+    shortDescription: (formData.get("shortDescription") as string) || "",
+    description: (formData.get("description") as string) || "",
     tags: formData.get("tags") || "",
     images: formData.get("images") || undefined,
     amazonUrl: formData.get("amazonUrl"),
@@ -215,8 +217,8 @@ export async function createProductAction(
       slug: data.slug,
       brand: data.brand,
       categoryId: data.categoryId,
-      shortDescription: data.shortDescription,
-      description: data.description,
+      shortDescription: data.shortDescription || "",
+      description: data.description || "",
       tags: data.tags,
       images: data.images && data.images.length > 0 ? data.images : undefined,
       amazonUrl: data.amazonUrl,
@@ -321,8 +323,8 @@ export async function updateProductAction(
       slug: data.slug,
       brand: data.brand,
       categoryId: data.categoryId,
-      shortDescription: data.shortDescription,
-      description: data.description,
+      shortDescription: data.shortDescription || "",
+      description: data.description || "",
       tags: data.tags,
       amazonUrl: data.amazonUrl,
       asin: data.asin,

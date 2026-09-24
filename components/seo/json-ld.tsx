@@ -54,7 +54,7 @@ export function ProductJsonLd({
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.title,
-    description: product.description || product.shortDescription,
+    description: product.description || product.shortDescription || product.title,
     url: productUrl,
   };
 

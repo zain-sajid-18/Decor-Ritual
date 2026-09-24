@@ -64,7 +64,7 @@ export async function findProducts(params: ProductQueryParams = {}): Promise<Pro
       result = result.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
-          p.shortDescription.toLowerCase().includes(q) ||
+          (p.shortDescription || "").toLowerCase().includes(q) ||
           (p.brand && p.brand.toLowerCase().includes(q)) ||
           p.tags.some((t) => t.toLowerCase().includes(q))
       );
@@ -208,7 +208,7 @@ export async function findProductsWithPagination(
       result = result.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
-          p.shortDescription.toLowerCase().includes(q) ||
+          (p.shortDescription || "").toLowerCase().includes(q) ||
           (p.brand && p.brand.toLowerCase().includes(q)) ||
           p.tags.some((t) => t.toLowerCase().includes(q))
       );
@@ -437,8 +437,8 @@ export async function insertProduct(data: CreateProductInput): Promise<Product> 
       title: data.title,
       slug: data.slug,
       brand: data.brand,
-      shortDescription: data.shortDescription,
-      description: data.description,
+      shortDescription: data.shortDescription ?? "",
+      description: data.description ?? "",
       categoryId: data.categoryId,
       tags: data.tags,
       featured: data.featured ?? false,
