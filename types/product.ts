@@ -43,8 +43,8 @@ export type CreateProductInput = {
   title: string;
   slug: string;
   brand?: string;
-  shortDescription: string;
-  description: string;
+  shortDescription?: string;
+  description?: string;
   categoryId: string;
   tags: string[];
   images?: (Omit<ProductImage, "id"> & { cloudinaryPublicId?: string })[];
