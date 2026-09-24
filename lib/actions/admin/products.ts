@@ -17,7 +17,8 @@ import {
 import { slugify, isValidSlug } from "@/lib/utils/slugify";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { deleteCloudinaryAssets, isCloudinaryConfigured } from "@/lib/cloudinary";
-import { isValidAmazonUrl } from "@/lib/amazon/domains";
+import { isValidAmazonUrl, isAmazonShortUrl } from "@/lib/amazon/domains";
+import { sanitizeAmazonUrl } from "@/lib/amazon/url";
 import type { ActionState } from "@/types/action";
 import type { CreateProductInput, UpdateProductInput } from "@/types/product";
 
@@ -82,8 +83,16 @@ const ProductFormSchema = z.object({
     .url("Amazon URL must be a valid URL.")
     .refine((url) => isValidAmazonUrl(url), {
       message:
-        "URL must be a valid Amazon product URL (e.g., https://www.amazon.com/dp/... or https://amzn.to/...).",
-    }),
+        "URL must be a valid Amazon product URL (e.g., https://www.amazon.com/dp/ASIN).",
+    })
+    .refine((url) => !isAmazonShortUrl(url), {
+      message:
+        "Short Amazon URLs (amzn.to, a.co, link.amazon) cannot carry your affiliate tag — you would earn NO commission. Please use the full Amazon product URL: https://www.amazon.com/dp/ASIN",
+    })
+    // Auto-strip session params (pd_rd_*, pf_rd_*, linkCode, linkId, etc.)
+    // and any existing tag — our system injects the tag fresh at render time.
+    // Admins can paste any Amazon URL and it will be cleaned automatically.
+    .transform((url) => sanitizeAmazonUrl(url)),
   asin: z
     .string()
     .trim()

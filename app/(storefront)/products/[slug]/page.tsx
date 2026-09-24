@@ -211,21 +211,21 @@ export default async function StorefrontProductDetailPage({
               <div className="grid grid-cols-3 gap-2 rounded-2xl border border-stone-200/80 bg-stone-50/80 dark:border-stone-800 dark:bg-stone-900/50 p-3.5 text-center">
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-stone-900 dark:text-stone-100">Amazon Direct</div>
-                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Safe Checkout</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Secure Checkout</div>
                 </div>
                 <div className="space-y-0.5 border-x border-stone-200 dark:border-stone-800">
-                  <div className="text-xs font-bold text-stone-900 dark:text-stone-100">Prime Shipping</div>
-                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Fast 2-Day Delivery</div>
+                  <div className="text-xs font-bold text-stone-900 dark:text-stone-100">Amazon Returns</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">A-to-z Guarantee</div>
                 </div>
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-stone-900 dark:text-stone-100">Curator Vetted</div>
-                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Craftsmanship Guaranteed</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Editorially Selected</div>
                 </div>
               </div>
 
-              {/* Amazon Affiliate Disclosure */}
+              {/* Amazon Affiliate Disclosure — required near every affiliate link */}
               <p className="text-[11px] leading-relaxed text-stone-500 dark:text-stone-400">
-                You will be securely redirected to Amazon.com to finalize your purchase. ZF Store is a participant in the Amazon Services LLC Associates Program and earns affiliate commissions from qualifying purchases.
+                <strong className="text-stone-600 dark:text-stone-300">Affiliate disclosure:</strong> As an Amazon Associate, we earn from qualifying purchases. You will be redirected to Amazon.com to complete your purchase. Prices are subject to change — the price shown on Amazon at the time of your order is the final price.
               </p>
             </div>
 

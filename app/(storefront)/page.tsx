@@ -12,14 +12,14 @@ import { Pagination } from "@/components/storefront/pagination";
 export const metadata: Metadata = {
   title: "ZF Store | Curated Home Decor & Lifestyle Objects",
   description:
-    "Discover intentional, design-forward objects curated for modern spaces. Direct Amazon Prime fulfillment.",
+    "Discover intentional, design-forward objects curated for modern spaces. Products fulfilled by Amazon.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "ZF Store | Curated Home Decor & Lifestyle Objects",
     description:
-      "Discover intentional, design-forward objects curated for modern spaces. Direct Amazon Prime fulfillment.",
+      "Discover intentional, design-forward objects curated for modern spaces. Products fulfilled by Amazon.",
     url: "/",
     siteName: "ZF Store",
     type: "website",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ZF Store | Curated Home Decor & Lifestyle Objects",
     description:
-      "Discover intentional, design-forward objects curated for modern spaces. Direct Amazon Prime fulfillment.",
+      "Discover intentional, design-forward objects curated for modern spaces. Products fulfilled by Amazon.",
   },
 };
 
@@ -118,14 +118,14 @@ export default async function StorefrontHomePage({
                 <svg className="h-4 w-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                Amazon Prime Delivery
+                Amazon Prime Eligible
               </span>
               <span className="text-stone-300 dark:text-stone-700">·</span>
               <span className="flex items-center gap-1.5 text-stone-800 dark:text-stone-200">
                 <svg className="h-4 w-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                30-Day Hassle-Free Returns
+                Amazon A-to-z Guarantee
               </span>
               <span className="text-stone-300 dark:text-stone-700">·</span>
               <span className="flex items-center gap-1.5 text-stone-800 dark:text-stone-200">
@@ -135,6 +135,10 @@ export default async function StorefrontHomePage({
                 Curator Quality Vetted
               </span>
             </div>
+            {/* FTC-required disclosure — visible above the fold near affiliate links */}
+            <p className="text-[11px] text-stone-400 dark:text-stone-500 pt-1">
+              As an Amazon Associate, we earn from qualifying purchases. Prices subject to change.
+            </p>
           </div>
 
           {/* Right Column: Visual Showcase Spotlight Card */}
