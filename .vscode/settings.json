@@ -1,0 +1,7 @@
+{
+  // Tailwind CSS v4 uses custom at-rules (@custom-variant, @theme, @utility)
+  // that the built-in VS Code CSS language server doesn't recognise.
+  // These are NOT errors — ignore them to keep the Problems panel clean.
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore"
+}

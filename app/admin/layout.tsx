@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/nav";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getOptionalSession } from "@/lib/auth/require-admin";
 import { logoutAction } from "@/lib/actions/admin/auth";
 
@@ -113,12 +114,8 @@ export default async function AdminLayout({
             <span className="text-zinc-800 dark:text-zinc-200 font-medium">Workspace</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              DAL Active
-            </span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">|</span>
+          <div className="flex items-center gap-3">
+            <ThemeToggle variant="dropdown" />
             <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
               {session.email}
             </span>

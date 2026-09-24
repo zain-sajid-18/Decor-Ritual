@@ -101,33 +101,34 @@ export default async function StorefrontProductDetailPage({
         {/* Breadcrumb Navigation */}
         <nav
           aria-label="Breadcrumb"
-          className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
+          className="flex flex-wrap items-center gap-2 text-xs text-stone-500 dark:text-stone-400"
         >
           <Link
             href="/"
-            className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium"
           >
-            Home
+            Catalog
           </Link>
-          <span aria-hidden="true">/</span>
+          <span className="text-stone-300 dark:text-stone-700" aria-hidden="true">/</span>
           {product.categorySlug ? (
             <>
               <Link
                 href={`/categories/${encodeURIComponent(product.categorySlug)}`}
-                className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors capitalize"
+                className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors capitalize font-medium"
               >
                 {product.categorySlug.replace(/-/g, " ")}
               </Link>
-              <span aria-hidden="true">/</span>
+              <span className="text-stone-300 dark:text-stone-700" aria-hidden="true">/</span>
             </>
           ) : null}
-          <span className="text-zinc-900 dark:text-zinc-100 font-medium truncate max-w-xs sm:max-w-md">
+          <span className="text-stone-900 dark:text-stone-100 font-semibold truncate max-w-xs sm:max-w-md">
             {product.title}
           </span>
         </nav>
 
         {/* Main Product Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+          
           {/* Left Column: Product Visuals / Image Gallery */}
           <div className="lg:col-span-7">
             <ProductGallery
@@ -142,95 +143,118 @@ export default async function StorefrontProductDetailPage({
               {/* Brand & Badges */}
               <div className="flex flex-wrap items-center gap-2">
                 {product.brand && (
-                  <span className="text-xs uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400">
+                  <span className="text-xs uppercase tracking-widest font-bold text-amber-600 dark:text-amber-400">
                     {product.brand}
                   </span>
                 )}
-                {product.featured && <Badge variant="success">Featured</Badge>}
+                {product.featured && (
+                  <span className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                    Featured Item
+                  </span>
+                )}
                 {product.recommended && (
-                  <Badge variant="outline">Recommended</Badge>
+                  <span className="rounded-full bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-500/30 px-3 py-0.5 text-[10px] font-bold">
+                    Curator Verified
+                  </span>
                 )}
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 dark:text-stone-50 leading-tight">
                 {product.title}
               </h1>
 
-              {/* Category Link */}
+              {/* Collection Link */}
               {product.categorySlug && (
                 <div className="pt-0.5">
                   <Link
                     href={`/categories/${encodeURIComponent(product.categorySlug)}`}
-                    className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 capitalize underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-amber-600 dark:text-stone-300 dark:hover:text-amber-400 capitalize transition-colors"
                   >
-                    Category: {product.categorySlug.replace(/-/g, " ")}
+                    <span>Collection:</span>
+                    <span className="underline decoration-amber-500 decoration-2 underline-offset-4">{product.categorySlug.replace(/-/g, " ")}</span>
                   </Link>
                 </div>
               )}
             </div>
 
             {/* Short Description */}
-            <div className="text-sm font-medium leading-relaxed text-zinc-700 dark:text-zinc-300">
-              {product.shortDescription}
-            </div>
+            {product.shortDescription && (
+              <p className="text-sm font-normal leading-relaxed text-stone-600 dark:text-stone-300">
+                {product.shortDescription}
+              </p>
+            )}
 
-            {/* Primary Outbound Amazon Destination CTA */}
-            <div className="space-y-3 pt-2">
+            {/* Radiant Outbound Amazon CTA Button */}
+            <div className="space-y-4 pt-2">
               <a
                 href={amazonOutboundUrl}
                 target="_blank"
                 rel="nofollow sponsored noopener"
-                className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-zinc-900 px-6 py-4 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="group relative flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-amber-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-amber-500/35 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
               >
-                <span>View on Amazon</span>
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
+                <div className="flex items-center gap-3">
+                  <svg className="h-5 w-5 text-white/95" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                  <span>View & Purchase on Amazon</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-amber-100 font-semibold">
+                  <span>Prime Eligible</span>
+                  <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </div>
               </a>
 
-              {/* Transparent Amazon Associates Disclosure */}
-              <p className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-                External link. You will be redirected to Amazon for purchasing
-                and fulfillment. ZF Store may earn an affiliate commission on
-                qualifying purchases at no additional cost to you.
+              {/* 3-Point Value Assurance Card */}
+              <div className="grid grid-cols-3 gap-2 rounded-2xl border border-stone-200/80 bg-stone-50/80 dark:border-stone-800 dark:bg-stone-900/50 p-3.5 text-center">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-stone-900 dark:text-stone-100">Amazon Direct</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Safe Checkout</div>
+                </div>
+                <div className="space-y-0.5 border-x border-stone-200 dark:border-stone-800">
+                  <div className="text-xs font-bold text-stone-900 dark:text-stone-100">Prime Shipping</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Fast 2-Day Delivery</div>
+                </div>
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-stone-900 dark:text-stone-100">Curator Vetted</div>
+                  <div className="text-[10px] text-stone-500 dark:text-stone-400">Craftsmanship Guaranteed</div>
+                </div>
+              </div>
+
+              {/* Amazon Affiliate Disclosure */}
+              <p className="text-[11px] leading-relaxed text-stone-500 dark:text-stone-400">
+                You will be securely redirected to Amazon.com to finalize your purchase. ZF Store is a participant in the Amazon Services LLC Associates Program and earns affiliate commissions from qualifying purchases.
               </p>
             </div>
 
             {/* Tags */}
             {product.tags && product.tags.length > 0 && (
-              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block">
+              <div className="pt-4 border-t border-stone-200 dark:border-stone-800 space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 block">
                   Tags & Aesthetics
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {product.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
+                    <span
+                      key={tag}
+                      className="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-300"
+                    >
                       #{tag}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Full Description */}
+            {/* Full Product Specifications */}
             {product.description && (
-              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  Product Details
+              <div className="pt-4 border-t border-stone-200 dark:border-stone-800 space-y-2.5">
+                <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100 uppercase tracking-wide">
+                  Product Details & Specifications
                 </h2>
-                <div className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed whitespace-pre-line">
+                <div className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed whitespace-pre-line">
                   {product.description}
                 </div>
               </div>

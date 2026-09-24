@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getSiteUrl } from "@/lib/seo/config";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,6 +41,22 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Inline script injected into <head> before any CSS or JS loads.
+ * Reads the stored theme preference and applies the correct class to <html>
+ * synchronously, preventing a flash of wrong theme (FOUC) on page load.
+ */
+const themeScript = `
+(function() {
+  try {
+    var stored = localStorage.getItem('zf-theme');
+    var theme = stored === 'light' || stored === 'dark' ? stored
+      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.classList.add(theme);
+  } catch(e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,8 +66,15 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        {/* Prevents flash of wrong theme — must run before body renders */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
